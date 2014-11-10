@@ -1,6 +1,7 @@
 from random import randint, sample
 import os
 
+
 class Bron(object):
 	przypadek = dict (
 		mianownik = '....',
@@ -59,10 +60,11 @@ class Istota(object):
 class Postac(object):
 	def __init__(self, nazwa):
 		super(self, Postac).__init__(nazwa, sila = 3, pz = 40 + randint(10,15), bron = Palka(), zloto = 50 + randint(25,50))
-	
+		self.poziom = 0
 	def pancerz(self):
 		return 2
-		
+	def trudnosc():
+		self.poziom += 1
 	
 class Potwor(Istota):
 	pass
@@ -576,8 +578,11 @@ class GeneratorWrogow(object):
 		for index, potwor in enumerate(self.wrogowie):
 			self.szansa.extend([index] * potwor['szansa'])
 	
-	def losowanie(self):
+	def losowanie(self, poziom):
 		wylosowany = sample(self.szansa, 1)[0]
+		wylosowany = wylosowany + poziom
+		if wylosowany > len(wrogowie):
+			wylosowany = len(wrogowie) - 1
 		klasa_wylooswanego = self.wrogowie[wylosowany]['potwor']
 		
 		return klasa_wylooswanego() 
@@ -585,7 +590,7 @@ class GeneratorWrogow(object):
 class Walka(object):
 	def __init__(self, specjalny):
 		self.generowanie = GeneratorWrogow()
-		self.wrog = self.generowanie.losowanie
+		self.wrog = self.generowanie.losowanie(gracz.poziom)
 	
 	def atak(atakujacy, atakowany):
 		obrazenia = atakujacy.bron.wylicz_obrazenia(atakujacy, atakowany)
@@ -604,10 +609,13 @@ class Walka(object):
 			atak(istota1, istota2)
 			if istota2.czy_zyje():
 				atak(istota2, istota1)
-		if gracz.czy_zyje:
+		if gracz.czy_zyje():
 			print 'gratulacje ..................'
 			gracz.dodaj_zloto(wrog.zloto)
-			
+			gracz.trudnosc()
+		else:
+			print 'umarles'
+			exit(1)
 		return 'wygrana'	
 		
 		
