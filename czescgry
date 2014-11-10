@@ -18,7 +18,7 @@ class Miecz(Bron):
 		dopelniacz = 'miecza',)
 	
 	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,12)) - atakowany.pancerz()*0,5
+		return (atakujacy.sila + randint(1,12)) - atakowany.pancerz*0,5
 		
 class Palka(Bron):
 	przypadek = dict (
@@ -58,14 +58,19 @@ class Istota(object):
 		return self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto
 		
 class Postac(object):
-	def __init__(self, nazwa):
-		super(self, Postac).__init__(nazwa, sila = 3, pz = 40 + randint(10,15), bron = Palka(), zloto = 50 + randint(25,50))
+	def __init__(self, imie):
+		super(Postac, self).__init__(imie, sila = 3, pz = 40 + randint(10,15), bron = Palka(), zloto = 50 + randint(25,50),)
 		self.poziom = 0
-	def pancerz(self):
-		return 2
-	def trudnosc():
+		self.pancerz = 2
+		self.mikstura = 1
+		
+	def trudnosc(self):
 		self.poziom += 1
 	
+	def uzycie_mikstury(self):
+		self.mikstura = self.mikstura - 1
+		print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.mikstura)
+
 class Potwor(Istota):
 	pass
 		
@@ -78,8 +83,8 @@ class Legowisko():
 		print 'nie ma stad gdzie uciec, wiec jedyne co pozostaje to walka'
 		raw_input('[enter]')
 		while True:
-			final = Walka('smok')
-			wynik = final.akcja()
+			final = Walka()
+			wynik = final.pojedynek()
 			if wynik == 'wygrana':
 				print 'pokonales bestie stanowiaca zagrozenie dla'
 				print 'wioski - zostales jej bohaterem'
@@ -98,8 +103,8 @@ class Ork(Potwor):
 		bron = Palka(),
 		zloto = 20 + randint(1,20),
 		)
-	def pancerz(self):
-		return 2
+		self.pancerz = 2
+	
 		
 class Goblin(Potwor):
 	def __init__(self):
@@ -110,8 +115,8 @@ class Goblin(Potwor):
 		bron = Palka(),
 		zloto = 10 + randint(1,10),
 		)
-	def pancerz(self):
-		return 0
+		self.pancerz = 0
+	
 	
 class Wilk(Potwor):
 	pass
@@ -140,7 +145,7 @@ class Sekretnamisja(object):
 			print 'musisz walczyc'
 			raw_input('[enter]')
 			atak = Walka('spiderman')
-			wynik = atak.akcja()
+			wynik = atak.pojedynek()
 			if wynik == 'wygrana':
 				os.system('clear')
 				print 'po ciezkiej walce udaje ci sie powalic pajaka'
@@ -156,20 +161,20 @@ class Sekretnamisja(object):
 				if wybor == '1':
 					print 'zabierasz bron i zloto'
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.zarobki(500)
-					gracz.atakmodyf('rusznica',0)
+					gracz.dodaj_zloto(500)
+					gracz.zmiana_broni(Rusznica())
 			
 					return 'las'
 				elif wybor == '2':
 					print 'zabierasz bron '
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.atakmodyf('rusznica',0)
+					gracz.zmiana_broni(Rusznica())
 									
 					return 'las'	
 				elif wybor == '3':
 					print 'zabierasz zloto'
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.zarobki(500)
+					gracz.dodaj_zloto(500)
 					return 'las'
 				else:
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
@@ -185,7 +190,7 @@ class Sekretnamisja(object):
 		
 		else:
 			print 'czujesz ze straciles szanse swego zycia w tej wiosce'
-			print 'dziad byl przekonujacy i na pewno mial dobra nagrode'
+			print 'dziad byl godny zaufania i na pewno mial dobra nagrode'
 			raw_input('[enter]')
 			return 'wioska'
 			
@@ -197,88 +202,90 @@ class Wioska(object):
 	
 	def wejscie(self):
 		
-			print "Jestes w wiosce, nie pamietasz jak tu dotares, nie znasz nazwy tej wioski"
-			print "Wokol widac kilka charakterystycznych miejsc: sklep platnerza, tablica z rysunkami potworow"
-			print "wyglada na informacyjna"
-			print "obok tablicy stoi osilek, pewnie potrafilby nauczyc cie walczyc"
-			print "widac rowniez slepego zebraka, oraz krupiera"
-			print "jest tez mapa z zaznaczonymi miejscami obok wioski:"
-			print "co robisz?"
-			print "1. Ide do sklepu"
-			print "2. Podchodze do tablicy"
-			print "3. Podchodze do osilka"
-			print "4. Chce opuscic wioske, wiec podchodze do mapy"
-			print "5. Podchodze do krupiera"
-			print "6. Sprawdzam postac"
-			print "7. Pije miksture leczenia"
-			wybor = raw_input("> ")
-			if wybor == "1":
-				return 'sklep'
-			elif wybor == "2":
-				os.system('clear')
-				print "drodzy mieszkancy wsi nowosiolki"
-				print "uprzejmie donosi sie ze we wiosku naszej zlo straszliwe sie dzieje"
-				print "wszedy pelno plugastwa wszelakiego i niebezpiecznie sie wloczyc"
-				print "orki wilki i gobliny napastuje one nas bardzo"
-				print "tedy uwaza sie jakby komu zechcialo po lesie sie wloczyc niech nie walczy z orkami i wilkami"
-				print "majac tylko prowizorycznom bron"
-				print "soltys wsi Jan Konieczny"
+		print "Jestes w wiosce, nie pamietasz jak tu dotares, nie znasz nazwy tej wioski"
+		print "Wokol widac kilka charakterystycznych miejsc: sklep platnerza, tablica z rysunkami potworow"
+		print "wyglada na informacyjna"
+		print "obok tablicy stoi osilek, pewnie potrafilby nauczyc cie walczyc"
+		print "widac rowniez slepego zebraka, oraz krupiera"
+		print "jest tez mapa z zaznaczonymi miejscami obok wioski:"
+		print "co robisz?"
+		print "1. Ide do sklepu"
+		print "2. Podchodze do tablicy"
+		print "3. Podchodze do osilka"
+		print "4. Chce opuscic wioske, wiec podchodze do mapy"
+		print "5. Podchodze do krupiera"
+		print "6. Sprawdzam postac"
+		print "7. Pije miksture leczenia"
+		wybor = raw_input("> ")
+		if wybor == "1":
+			return 'sklep'
+		elif wybor == "2":
+			os.system('clear')
+			print "drodzy mieszkancy wsi nowosiolki"
+			print "uprzejmie donosi sie ze we wiosku naszej zlo straszliwe sie dzieje"
+			print "wszedy pelno plugastwa wszelakiego i niebezpiecznie sie wloczyc"
+			print "orki wilki i gobliny napastuje one nas bardzo"
+			print "tedy uwaza sie jakby komu zechcialo po lesie sie wloczyc niech nie walczy z orkami i wilkami"
+			print "majac tylko prowizorycznom bron"
+			print "soltys wsi Jan Konieczny"
+			raw_input('[enter]')
+			return 'wioska'
+		elif wybor == "3":
+			return 'trening'
+		elif wybor == "4":
+			print "Mapa jasno i precyzyjnie opisuje droge do lasu"
+			raw_input('[enter]')
+			return 'las'
+		elif wybor == "5":
+			print "krupier widzac ciebie patrzy sie chytrym wzrokiem"
+			print "zagrajmy w kosci - mowi - ile stawiasz"
+			print "nie mozesz wiecej niz", zloto
+			ile = input('> ')
+			if ile == 0:
+				print 'po co mi dupe zawracasz, wynocha, go away'
 				raw_input('[enter]')
 				return 'wioska'
-			elif wybor == "3":
-				return 'trening'
-			elif wybor == "4":
-				print "Mapa jasno i precyzyjnie opisuje droge do lasu"
+			elif ile > zloto:
+				print 'nie masz tyle zlota debilu wynocha'
 				raw_input('[enter]')
-				return 'las'
-			elif wybor == "5":
-				print "krupier widzac ciebie patrzy sie chytrym wzrokiem"
-				print "zagrajmy w kosci - mowi - ile stawiasz"
-				print "nie mozesz wiecej niz", zloto
-				ile = input('> ')
-				if ile == 0:
-					print 'po co mi dupe zawracasz, wynocha, go away'
-					raw_input('[enter]')
-					return 'wioska'
-				elif ile > zloto:
-					print 'nie masz tyle zlota debilu wynocha'
-					raw_input('[enter]')
-					return 'wioska'
-				else:
-					print "krupier pobiera od Ciebie sume", ile
-					gracz.zarobki(-ile)
-					krupier, graczk = 0,0
-					while krupier == graczk:
-						os.system('clear')
-						krupier1, krupier2,gracz1,gracz2 = randint(2,6),randint(2,6),randint(1,6),randint(1,6),
-						print "wygrywa ten kto wiecej rzuci na kosciach"
-						print "krupier wyrzuca na pierwszej kosci %s a na drugiej %s" % (krupier1, krupier2)
-						krupier = krupier1 + krupier2
-						graczk = gracz1 + gracz2
-						print "rzucasz na pierwszej", gracz1
-						print "na drugiej", gracz2
-						raw_input('[enter]')
-						if krupier > graczk:
-							print "baaaaardzo mi przykro ale przegrales, zabieram pieniazki, a ty uciekaj do wioski"
-							raw_input('[enter]')
-							return 'wioska'
-						elif krupier < graczk:
-							print 'udalo ci sie obwiesiu, bierz kase i spadaj'
-							ile = 2*ile
-							gracz.zarobki(ile)
-							return 'wioska'    
-						else:
-							print "cholera wyrzucilismy po tyle samo, sprobujmy jeszcze raz"
-							raw_input('[enter]')                	
-			elif wybor == "6":
-				gracz.wydruk_opisu()
-				return 'wioska' 
-			elif wybor == "7":
-				gracz.leczenie(1,0)
 				return 'wioska'
-			
 			else:
-				return 'wioska'
+				print "krupier pobiera od Ciebie sume", ile
+				gracz.zarobki(-ile)
+				krupier, graczk = 0,0
+				while krupier == graczk:
+					os.system('clear')
+					krupier1, krupier2,gracz1,gracz2 = randint(2,6),randint(2,6),randint(1,6),randint(1,6),
+					print "wygrywa ten kto wiecej rzuci na kosciach"
+					print "krupier wyrzuca na pierwszej kosci %s a na drugiej %s" % (krupier1, krupier2)
+					krupier = krupier1 + krupier2
+					graczk = gracz1 + gracz2
+					print "rzucasz na pierwszej", gracz1
+					print "na drugiej", gracz2
+					raw_input('[enter]')
+					if krupier > graczk:
+						print "baaaaardzo mi przykro ale przegrales, zabieram pieniazki, a ty uciekaj do wioski"
+						raw_input('[enter]')
+						return 'wioska'
+					elif krupier < graczk:
+						print 'udalo ci sie obwiesiu, bierz kase i spadaj'
+						ile = 2*ile
+						gracz.zarobki(ile)
+						return 'wioska'    
+					else:
+						print "cholera wyrzucilismy po tyle samo, sprobujmy jeszcze raz"
+						raw_input('[enter]')                	
+		elif wybor == "6":
+			print gracz.opis()
+			raw_input('[enter]')
+			return 'wioska' 
+		elif wybor == "7":
+			gracz.dodaj_pz(10)
+			
+			return 'wioska'
+			
+		else:
+			return 'wioska'
 
 class Sklep(object):
     
@@ -347,43 +354,43 @@ class Trening(object):
 		print 'witaj mlodziencu widze ze masz ochote na trening'
 		print 'mam nadzieje ze masz zloto'
 		print 'ile chcesz trenowac?'
-		print '1. chce trenowac do poznej nocy [koszt 400, atak +10]'
-		print '2. chce trenowac do wieczora [koszt 200, atak +5]'
-		print '3. chce trenowac do poludnia [koszt 40, atak +1]'
+		print '1. chce trenowac do poznej nocy [koszt 1000, atak +5]'
+		print '2. chce trenowac do wieczora [koszt 400, atak +2]'
+		print '3. chce trenowac do poludnia [koszt 200, atak +1]'
 		print '4. nie chce trenowac'
 		print '5. sprawdzam postac'
 		wybor = raw_input('> ')
 		if wybor == '1':
-			if zloto < 400:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
+			if gracz.czy_stac(1000):
+				gracz.sila = gracz.sila + 5
+				gracz.odejmij_zloto(1000)
 				raw_input('[enter]')
 				return 'trening'
 			else:
-				gracz.zarobki(-400)
-				gracz.atakmodyf(0, 10)
+				print 'nie bede z toba trenowac nie masz pieniedzy'
 				return 'trening'
 		elif wybor == '2':
-			if zloto < 200:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
+			if gracz.czy_stac(400):
+				gracz.sila = gracz.sila + 2
+				gracz.odejmij_zloto(400)
 				raw_input('[enter]')
 				return 'trening'
 			else:
-				gracz.zarobki(-200)
-				gracz.atakmodyf(0, 5)
+				print 'nie bede z toba trenowac nie masz pieniedzy'
 				return 'trening'
 		elif wybor == '3':
-			if zloto < 40:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
+			if gracz.czy_stac(200):
+				gracz.sila = gracz.sila + 1
+				gracz.odejmij_zloto(200)
 				raw_input('[enter]')
 				return 'trening'
 			else:
-				gracz.zarobki(-40)
-				gracz.atakmodyf(0, 1)
+				print 'nie bede z toba trenowac nie masz pieniedzy'
 				return 'trening'		
 		elif wybor == '4':
 			return 'wioska'
 		elif wybor == '5':
-			gracz.wydruk_opisu()
+			gracz.opis()
 			return 'trening'
 		else:
 			return 'trening'
@@ -401,7 +408,7 @@ class Las(object):
 			return 'wioska'
 		elif wybor == "2":
 			atak = Walka(0)
-			wynik = atak.akcja()
+			wynik = atak.pojedynek()
 			if wynik == 'wygrana':
 				print 'po pokonaniu przeciwnika mozesz udac sie nad rzeke, idziesz tam?'
 				rzeka = raw_input('[tak/nie]> ')
@@ -592,42 +599,60 @@ class Walka(object):
 		self.generowanie = GeneratorWrogow()
 		self.wrog = self.generowanie.losowanie(gracz.poziom)
 	
-	def atak(atakujacy, atakowany):
+	def atak(self, atakujacy, atakowany):
 		obrazenia = atakujacy.bron.wylicz_obrazenia(atakujacy, atakowany)
 		if obrazenia > 0:
 			atakowany.odejmij_pz(obrazenia)
 		print '%s zadaje %s obrazenia %d ' % (atakujacy.nazwa, atakujacy.bron.nazwa('narzednik'), obrazenia)
-		
-	def pojedynek(istota1, istota2):
+		raw_input('[enter]')
+	def pojedynek(self):
+		istota1 = gracz
+		istota2 = self.wrog
 		# test inicjatywy
 		inicjatywa1 = randint(1,1000)
 		inicjatywa2 = randint(1,1000)
 		if inicjatywa2 > inicjatywa1:
 			istota1, istota2 = istota2, istota1
+		sila_gracza_bezmodyf, pancerz_gracz_bezmodyf = gracz.sila, gracz.pancerz
 		
 		while istota1.czy_zyje() and istota2.czy_zyje():
+			os.system('clear')
+			print 'przed Toba znajduje sie gotowy do walki %s, mozesz go zaatakowac uzywajac %s' % (self.wrog.nazwa, gracz.bron.nazwa('narzednik'))
+			print '1. Agresywny tryb walki [atak+20%, obrona-50%] '
+			print '2. Defensywny tryb walki [atak-20%, obrona+50%] '
+			print '3. Normalny tryb walki'
+			print '4. Pije miksture leczenia'
+			print '5. Uciekam'
+			wybor = raw_input('> ')
+			if wybor == '1':
+				gracz.sila, gracz.pancerz = gracz.sila + 0.2*gracz.sila, gracz.pancerz - 0.5*gracz.pancerz
+			elif wybor == '2':
+				gracz.sila, gracz.pancerz = gracz.sila - 0.2*gracz.sila, gracz.pancerz + 0.5*gracz.pancerz
+			elif wybor == '4':
+				if gracz.mikstura > 0:
+					gracz.dodaj_pz(10)
+					gracz.uzycie_mikstury()
+					raw_input('>')
+					
+				else:
+					print 'nie masz mikstury'
+			elif wybor == '5':
+				print 'tchorzliwie uciekasz z pola walki, najwyrazniej %s to zbyt potezny przeciwnik dla Ciebie' % self.wrog.nazwa 
+				return 'ucieczka'
 			atak(istota1, istota2)
 			if istota2.czy_zyje():
 				atak(istota2, istota1)
+			gracz.sila, gracz.pancerz = sila_gracza_bezmodyf, pancerz_gracz_bezmodyf 
 		if gracz.czy_zyje():
-			print 'gratulacje ..................'
-			gracz.dodaj_zloto(wrog.zloto)
+			print 'gratulacje martwy %s lezy u Twych stop, zdobyles po pokonanym wrogu %s sztuk zlota' % (self.wrog.nazwa, self.wrog.zloto)
+			gracz.dodaj_zloto(self.wrog.zloto)
 			gracz.trudnosc()
 		else:
 			print 'umarles'
 			exit(1)
 		return 'wygrana'	
+
+gracz = Postac('piotr')
+gra = Silnik()
+gra.gra()
 		
-		
-
-
-
-
-
-
-
-
-
-
-
-				
