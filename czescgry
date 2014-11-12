@@ -108,18 +108,19 @@ class Postac(Istota):
 	def __init__(self, imie):
 		super(Postac, self).__init__(
 			nazwa = imie,
-			sila = 3,
+			sila = 2,
 			pz = 40 + randint(10,15),
-			bron = DobryMiecz(),
+			bron = Palka(),
 			zloto = 50 + randint(25,50),
-			pancerz = 2
+			pancerz = 1
 			)
 		self.poziom = 0
 		self.mikstura = 1
 		
 	def trudnosc(self):
 		self.poziom += 1
-	
+	def zakup_mikstury(self):
+		self.mikstura = self.mikstura + 1
 	def uzycie_mikstury(self):
 		self.mikstura = self.mikstura - 1
 		print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.mikstura)
@@ -186,23 +187,24 @@ class PoteznyGoblin(Goblin):
 		self.zloto = 20 + randint(1,10)
 		
 class Wilk(Potwor):
-	szczeki = BronNaturalna( 
-		przypadek = (
-			dict(
-				mianownik = 'szczeka',
-				dopelniacz = 'szczek',
-				narzednik = 'szczeka',
-				),),
-		obr_min = 1,
-		obr_max = 8,
-			)
+	
 	
 	def __init__(self):
+		szczeki = BronNaturalna( 
+			przypadek = 
+				dict(
+					mianownik = 'szczeka',
+					dopelniacz = 'szczek',
+					narzednik = 'szczeka',
+					),
+			obr_min = 1,
+			obr_max = 8,
+				)
 		super(Wilk, self).__init__(
 		nazwa = 'Wilk',
 		sila = 3,
 		pz = 15 + randint(1,10),
-		bron = self.szczeki,
+		bron = szczeki,
 		zloto = 10 +randint(1,20),
 		pancerz = 0,
 		)
@@ -217,19 +219,19 @@ class WscieklyWilk(Wilk):
 		self.zloto = 30 + randint(10,30)
 		
 class WielkiPajak(Potwor):
-	szczeki = BronNaturalna( 
-		przypadek = (
-			dict(
-				mianownik = 'szczeka',
-				dopelniacz = 'szczek',
-				narzednik = 'szczeka',
-				),
-			),
-		obr_min = 1,
-		obr_max = 10,
-			)
+	
 	
 	def __init__(self):
+		szczeki = BronNaturalna( 
+			przypadek = 
+				dict(
+					mianownik = 'szczeka',
+					dopelniacz = 'szczek',
+					narzednik = 'szczeka',
+					),
+			obr_min = 1,
+			obr_max = 10,
+				)
 		super(WielkiPajak, self).__init__(
 			nazwa = 'Wielki Pajak',
 			sila = 6,
@@ -238,7 +240,28 @@ class WielkiPajak(Potwor):
 			zloto = randint(0,10),
 			pancerz = 3
 			)
-	
+
+class Smok(Potwor):
+	def __init__(self):
+		pazury = BronNaturalna(
+			przypadek = dict(
+			mianownik = 'pazury',
+			dopelniacz = 'pazurow',
+			narzednik = 'pazurami',
+			
+			),
+			obr_min = 10,
+			obr_max = 25,
+		
+		)
+		super(Smok, self).__init__(
+			nazwa = 'Smok',
+			sila = 10,
+			pz = 100,
+			bron = pazury,
+			zloto = 10,
+			pancerz = 10,
+		)	
 class Sekretnamisja(object):
 	
 	def wejscie(self):
@@ -408,62 +431,99 @@ class Wioska(object):
 class Sklep(object):
     
     def wejscie(self):
-        os.system('clear')
-        print "wszedles do sklepu, sprzedawca sie pyta co chcialbys kupic"
-        print "widzisz liste przedmiotow wraz z cenami"
-        print "1. zwykly miecz - cena 20"
-        print "2. dobry miecz - cena 250"
-        print "3. rusznica - cena 1500"
-        print "4. mikstura leczenia - cena 75"
-        print "5. wracam do wioski"
-        wybor = raw_input('> ')
-        if wybor == '1':
-            if gracz.zloto < 20:
-                print 'Panie nie stac cie na taki miecz'
+		os.system('clear')
+		print "wszedles do sklepu, sprzedawca sie pyta co chcialbys kupic"
+		print "widzisz liste przedmiotow wraz z cenami"
+		print "1. zwykly miecz - cena 50"
+		print "2. dobry miecz - cena 200"
+		print "3. zwykly mlot - cena 50"
+		print "4. dobry mlot - cena 200"
+		print "5. zwykly topor - 60"
+		print "6. dobry topor - 220"
+		print "7. mikstura leczenia - cena 75"
+		print "8. wracam do wioski"
+		
+		wybor = raw_input('> ')
+		if wybor == '1':
+			if gracz.czy_stac(50):
+				gracz.wydatki(50)
+				gracz.zmiana_broni(Miecz())
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep'
+		elif wybor == '2':
+			if gracz.czy_stac(200):
+				gracz.wydatki(200)
+				gracz.zmiana_broni(DobryMiecz())
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep'
+				
+		elif wybor == '3':
+			if gracz.czy_stac(50):
+				gracz.wydatki(50)
+				gracz.zmiana_broni(MlotBojowy())
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep'  
+		elif wybor == '4':
+            if gracz.czy_stac(200):
+                gracz.wydatki(200)
+				gracz.zmiana_broni(DobryMlotBojowy())
+				print 'gratuluje udanego zakupu'
                 raw_input('[enter]')
                 return 'sklep'
             else:
-                print 'dziekuje za udany zakup'
-                gracz.zarobki(-20)
-                gracz.atakmodyf('miecz',0)
-                
-                return 'sklep'        
-        elif wybor == '2':
-            if gracz.zloto < 250:
-                print 'Panie nie stac cie na taki miecz'
-                raw_input('[enter]')
-                return 'sklep'
-            else:
-                print 'dziekuje za udany zakup'
-                gracz.zarobki(-250)
-                gracz.atakmodyf('dobry_miecz',0)
-              
-                return 'sklep'     
-        elif wybor == '3':
-            if gracz.zloto < 1500:
-                print 'nie stac cie wynocha z mojego sklepu'
-                raw_input('[enter]')
-                return 'wioska'
-            else:
-                print 'dziekuje za udany zakup'
-                gracz.zarobki(-1500)
-                gracz.atakmodyf('rusznica',0)
-             
+                print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
                 return 'sklep' 
-        elif wybor == '4':
-            if gracz.zloto < 75:
-                print 'nie stac cie na miksture'
-                raw_input('[enter]')
-                return 'sklep'
-            else:
-                print 'dziekuje za udany zakup'
-                gracz.zarobki(-75)
-                gracz.leczenie(0,1)
-                return 'sklep'
-        elif wybor == '5':
-            return 'wioska'
-        else:
-            return 'sklep'            
+		elif wybor == '5':
+			if gracz.czy_stac(60):
+				gracz.wydatki(60)
+				gracz.zmiana_broni(Topor())
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep' 
+		elif wybor == '6':
+			if gracz.czy_stac(220):
+				gracz.wydatki(220)
+				gracz.zmiana_broni(DobryTopor())
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep'
+		elif wybor == '7':
+			if gracz.czy_stac(75):
+				gracz.wydatki(75)
+				gracz.zakup_mikstury()
+				print 'gratuluje udanego zakupu'
+				raw_input('[enter]')
+				return 'sklep'
+			else:
+				print 'Panie nie stac cie na taki zakup'
+				raw_input('[enter]')
+				return 'sklep' 			
+		else:
+			return 'sklep'            
 			
 class Trening(object):
 	def wejscie(self):
@@ -684,9 +744,6 @@ class Silnik(object):
 			kolejnalokacja = obecnalokacja.wejscie()
 			obecnalokacja = self.pobierz_scene(kolejnalokacja)
 
-class Spiderman(Potwor):
-	pass
-
 class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
@@ -694,17 +751,22 @@ class GeneratorWrogow(object):
 					szansa = 5,
 					),
 				dict(
+					potwor = Wilk,
+					szansa = 20,
+					),	
+				dict(
 					potwor = Ork,
-					szansa = 5,
+					szansa = 0,
 					),
 				dict(
 					potwor = PoteznyGoblin,
-					szansa = 10,
+					szansa = 1,
 					),
 				dict(
 					potwor = WscieklyWilk,
-					szansa = 20,
-					),				
+					szansa = 1,
+					),
+						
 					]
 
 	def __init__(self):
