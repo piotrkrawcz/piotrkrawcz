@@ -1,7 +1,9 @@
 from random import randint, sample
 import os
 
-
+class Wydruki(object):
+	# tu przeniose wszystkie printy w miare pisania gry
+	pass
 class Bron(object):
 	przypadek = dict (
 		mianownik = '....',
@@ -12,28 +14,73 @@ class Bron(object):
 	def wylicz_obrazenia(self, atakujacy, atakowany):
 		return 0
 
+class BronNaturalna(Bron):
+	def __init__(self, przypadek, obr_min, obr_max):
+		super(BronNaturalna, self).__init__()
+		self.przypadek = przypadek
+		self.obr_min = obr_min
+		self.obr_max = obr_max
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - atakowany.pancerz
+	
 class Miecz(Bron):
 	przypadek = dict (
 		mianownik = 'miecz',
-		dopelniacz = 'miecza',)
+		dopelniacz = 'miecza',
+		narzednik = 'mieczem',
+		)
 	
 	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,12)) - atakowany.pancerz*0,5
+		return (atakujacy.sila + randint(2,6)) - atakowany.pancerz*0.5
+
+class DobryMiecz(Miecz):
+	
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(4,8)) - atakowany.pancerz*0.5
+		
+class MlotBojowy(Bron):
+	przypadek = dict (
+		mianownik = 'mlot bojowy',
+		dopelniacz = 'mlota bojowego',
+		narzednik = 'mlotem bojowym',
+		)		
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(3,5)) - atakowany.pancerz*0.5
+
+class DobryMlotBojowy(MlotBojowy):
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(3,5))
+		
+class Topor(Bron):
+	przypadek = dict (
+		mianownik = 'topor',
+		dopelniacz = 'topora',
+		narzednik = 'toporem',)
+	
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(1,7)) - atakowany.pancerz*0.5
+
+class DobryTopor(Topor):
+	def wylicz_obrazenia(self, atakujacy, atakowany):
+		return (atakujacy.sila + randint(1,9)) - atakowany.pancerz*0.1
 		
 class Palka(Bron):
 	przypadek = dict (
 		mianownik = 'palka',
-		dopelniacz = 'palki',)	
+		dopelniacz = 'palki',
+		narzednik = 'palka',
+		)	
 	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,6)) - atakowany.pancerz()*2
+		return (atakujacy.sila + randint(1,4)) - atakowany.pancerz*2
 		
 class Istota(object):
-	def __init__(self, nazwa, sila, pz, bron, zloto):
+	def __init__(self, nazwa, sila, pz, bron, zloto, pancerz):
 		self.nazwa = nazwa
 		self.sila = sila
 		self.pz = pz
 		self.bron = bron
 		self.zloto = zloto
+		self.pancerz = pancerz
 		
 	def dodaj_pz(self, zmiana_pz):
 		self.pz = self.pz + zmiana_pz
@@ -46,7 +93,7 @@ class Istota(object):
 		self.bron = bron
 	
 	def zarobki(self, dodaj_zloto):
-		self.zloto = self.zlto + dodaj_zloto
+		self.zloto = self.zloto + dodaj_zloto
 		
 	def wydatki(self, odejmij_zloto):
 		self.zloto = self.zloto - odejmij_zloto
@@ -57,11 +104,17 @@ class Istota(object):
 	def opis(self):
 		return self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto
 		
-class Postac(object):
+class Postac(Istota):
 	def __init__(self, imie):
-		super(Postac, self).__init__(imie, sila = 3, pz = 40 + randint(10,15), bron = Palka(), zloto = 50 + randint(25,50),)
+		super(Postac, self).__init__(
+			nazwa = imie,
+			sila = 3,
+			pz = 40 + randint(10,15),
+			bron = DobryMiecz(),
+			zloto = 50 + randint(25,50),
+			pancerz = 2
+			)
 		self.poziom = 0
-		self.pancerz = 2
 		self.mikstura = 1
 		
 	def trudnosc(self):
@@ -96,30 +149,95 @@ class Legowisko():
 			
 class Ork(Potwor):
 	def __init__(self):
-		super(self, Ork).__init__(
+		super(Ork, self).__init__(
 		nazwa = u'Ork', 
-		sila = 5,
+		sila = 4,
 		pz = 20 + randint(1,10),
 		bron = Palka(),
-		zloto = 20 + randint(1,20),
+		zloto = 20 + randint(1,30),
+		pancerz = 3,
 		)
-		self.pancerz = 2
-	
 		
+class PoteznyOrk(Ork):
+	def __init__(self):
+		super(PoteznyOrk,self).__init__()
+		self.nazwa = 'Potezny Ork'
+		self.bron = DobryTopor()
+		self.pz = 40
+		self.zloto = 40 + randint(1,10)
+				
 class Goblin(Potwor):
 	def __init__(self):
-		super(self, Goblin).__init__(
+		super(Goblin, self).__init__(
 		nazwa = u'Goblin', 
 		sila = 2,
 		pz = 10 + randint(1,5),
 		bron = Palka(),
 		zloto = 10 + randint(1,10),
+		pancerz = 0
 		)
-		self.pancerz = 0
-	
-	
+		
+class PoteznyGoblin(Goblin):
+	def __init__(self):
+		super(PoteznyGoblin, self).__init__()
+		self.nazwa = 'Potezny Goblin'
+		self.sila = 3
+		self.pz = 15 + randint(1,10)
+		self.zloto = 20 + randint(1,10)
+		
 class Wilk(Potwor):
-	pass
+	szczeki = BronNaturalna( 
+		przypadek = (
+			dict(
+				mianownik = 'szczeka',
+				dopelniacz = 'szczek',
+				narzednik = 'szczeka',
+				),),
+		obr_min = 1,
+		obr_max = 8,
+			)
+	
+	def __init__(self):
+		super(Wilk, self).__init__(
+		nazwa = 'Wilk',
+		sila = 3,
+		pz = 15 + randint(1,10),
+		bron = self.szczeki,
+		zloto = 10 +randint(1,20),
+		pancerz = 0,
+		)
+
+class WscieklyWilk(Wilk):
+	
+	def __init__(self):
+		super(WscieklyWilk, self).__init__()
+		self.nazwa = 'Zajadly Toczacy Sline Wielki Wsciekly Wilk'
+		self.sila = 6
+		self.pz = 40 + randint(10,20)
+		self.zloto = 30 + randint(10,30)
+		
+class WielkiPajak(Potwor):
+	szczeki = BronNaturalna( 
+		przypadek = (
+			dict(
+				mianownik = 'szczeka',
+				dopelniacz = 'szczek',
+				narzednik = 'szczeka',
+				),
+			),
+		obr_min = 1,
+		obr_max = 10,
+			)
+	
+	def __init__(self):
+		super(WielkiPajak, self).__init__(
+			nazwa = 'Wielki Pajak',
+			sila = 6,
+			pz = 50 + randint(10,30),
+			bron = szczeki,
+			zloto = randint(0,10),
+			pancerz = 3
+			)
 	
 class Sekretnamisja(object):
 	
@@ -161,7 +279,7 @@ class Sekretnamisja(object):
 				if wybor == '1':
 					print 'zabierasz bron i zloto'
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.dodaj_zloto(500)
+					gracz.zarobki(500)
 					gracz.zmiana_broni(Rusznica())
 			
 					return 'las'
@@ -174,7 +292,7 @@ class Sekretnamisja(object):
 				elif wybor == '3':
 					print 'zabierasz zloto'
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.dodaj_zloto(500)
+					gracz.zarobki(500)
 					return 'las'
 				else:
 					print 'nie majac wiecej do roboty wracasz przez las do wioski'
@@ -300,7 +418,7 @@ class Sklep(object):
         print "5. wracam do wioski"
         wybor = raw_input('> ')
         if wybor == '1':
-            if zloto < 20:
+            if gracz.zloto < 20:
                 print 'Panie nie stac cie na taki miecz'
                 raw_input('[enter]')
                 return 'sklep'
@@ -311,7 +429,7 @@ class Sklep(object):
                 
                 return 'sklep'        
         elif wybor == '2':
-            if zloto < 250:
+            if gracz.zloto < 250:
                 print 'Panie nie stac cie na taki miecz'
                 raw_input('[enter]')
                 return 'sklep'
@@ -322,7 +440,7 @@ class Sklep(object):
               
                 return 'sklep'     
         elif wybor == '3':
-            if zloto < 1500:
+            if gracz.zloto < 1500:
                 print 'nie stac cie wynocha z mojego sklepu'
                 raw_input('[enter]')
                 return 'wioska'
@@ -333,7 +451,7 @@ class Sklep(object):
              
                 return 'sklep' 
         elif wybor == '4':
-            if zloto < 75:
+            if gracz.zloto < 75:
                 print 'nie stac cie na miksture'
                 raw_input('[enter]')
                 return 'sklep'
@@ -394,6 +512,7 @@ class Trening(object):
 			return 'trening'
 		else:
 			return 'trening'
+			
 class Las(object):
 	def wejscie(self):
 		os.system('clear')
@@ -572,12 +691,20 @@ class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
 					potwor = Goblin,
-					szansa = 10,
+					szansa = 5,
 					),
 				dict(
 					potwor = Ork,
 					szansa = 5,
 					),
+				dict(
+					potwor = PoteznyGoblin,
+					szansa = 10,
+					),
+				dict(
+					potwor = WscieklyWilk,
+					szansa = 20,
+					),				
 					]
 
 	def __init__(self):
@@ -588,8 +715,8 @@ class GeneratorWrogow(object):
 	def losowanie(self, poziom):
 		wylosowany = sample(self.szansa, 1)[0]
 		wylosowany = wylosowany + poziom
-		if wylosowany > len(wrogowie):
-			wylosowany = len(wrogowie) - 1
+		if wylosowany > len(self.wrogowie) - 1:
+			wylosowany = len(self.wrogowie) - 1
 		klasa_wylooswanego = self.wrogowie[wylosowany]['potwor']
 		
 		return klasa_wylooswanego() 
@@ -603,12 +730,16 @@ class Walka(object):
 		obrazenia = atakujacy.bron.wylicz_obrazenia(atakujacy, atakowany)
 		if obrazenia > 0:
 			atakowany.odejmij_pz(obrazenia)
-		print '%s zadaje %s obrazenia %d ' % (atakujacy.nazwa, atakujacy.bron.nazwa('narzednik'), obrazenia)
+			print '%s zadaje %s obrazenia %d ' % (atakujacy.nazwa, atakujacy.bron.nazwa('narzednik'), obrazenia)
+		else:
+			print 'atak %s nie zadal zadnych obrazen' % atakujacy.nazwa
 		raw_input('[enter]')
 	def pojedynek(self):
 		istota1 = gracz
 		istota2 = self.wrog
-		# test inicjatywy
+		self.silnik_walki(istota1, istota2)
+		
+	def silnik_walki(self, istota1, istota2):
 		inicjatywa1 = randint(1,1000)
 		inicjatywa2 = randint(1,1000)
 		if inicjatywa2 > inicjatywa1:
@@ -617,7 +748,7 @@ class Walka(object):
 		
 		while istota1.czy_zyje() and istota2.czy_zyje():
 			os.system('clear')
-			print 'przed Toba znajduje sie gotowy do walki %s, mozesz go zaatakowac uzywajac %s' % (self.wrog.nazwa, gracz.bron.nazwa('narzednik'))
+			print 'przed Toba znajduje sie gotowy do walki %s, mozesz go zaatakowac uzywajac %s' % (self.wrog.nazwa, gracz.bron.nazwa('dopelniacz'))
 			print '1. Agresywny tryb walki [atak+20%, obrona-50%] '
 			print '2. Defensywny tryb walki [atak-20%, obrona+50%] '
 			print '3. Normalny tryb walki'
@@ -637,15 +768,17 @@ class Walka(object):
 				else:
 					print 'nie masz mikstury'
 			elif wybor == '5':
-				print 'tchorzliwie uciekasz z pola walki, najwyrazniej %s to zbyt potezny przeciwnik dla Ciebie' % self.wrog.nazwa 
+				print 'tchorzliwie uciekasz z pola walki, najwyrazniej %s to zbyt potezny przeciwnik dla Ciebie' % self.wrog.nazwa
+				raw_input('[enter]')	
 				return 'ucieczka'
-			atak(istota1, istota2)
+			self.atak(istota1, istota2)
 			if istota2.czy_zyje():
-				atak(istota2, istota1)
+				self.atak(istota2, istota1)
 			gracz.sila, gracz.pancerz = sila_gracza_bezmodyf, pancerz_gracz_bezmodyf 
 		if gracz.czy_zyje():
 			print 'gratulacje martwy %s lezy u Twych stop, zdobyles po pokonanym wrogu %s sztuk zlota' % (self.wrog.nazwa, self.wrog.zloto)
-			gracz.dodaj_zloto(self.wrog.zloto)
+			raw_input('[enter]')
+			gracz.zarobki(self.wrog.zloto)
 			gracz.trudnosc()
 		else:
 			print 'umarles'
