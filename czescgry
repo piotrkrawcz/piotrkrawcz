@@ -429,101 +429,47 @@ class Wioska(object):
 			return 'wioska'
 
 class Sklep(object):
-    
+    def __init__(self):
+		def __init__(self):
+		self.przedmioty = [
+			dict(
+				towar = 'Miecz',
+				cena = 50,
+			),
+			dict(
+				towar = 'MlotBojowy',
+				cena = 50,
+			),
+			dict(
+				towar = 'Topor',
+				cena = 60,
+			),
+			dict(
+				towar = 'DobryMiecz',
+				cena = 200,
+			),
+			dict(
+				towar = 'DobryMlotBojowy',
+				cena = 200,
+			),
+			dict(
+				towar = 'DobryTopor',
+				cena = 220,
+			),
+			dict(
+				towar = 'mikstura',
+				cena = 75,
+			),
+		
+		]
+		self.lista_przedmiotow = []
+		for index, pozycja in enumerate(self.przedmioty):
+			self.lista_przedmiotow.append(index)
+	
+	
     def wejscie(self):
 		os.system('clear')
-		print "wszedles do sklepu, sprzedawca sie pyta co chcialbys kupic"
-		print "widzisz liste przedmiotow wraz z cenami"
-		print "1. zwykly miecz - cena 50"
-		print "2. dobry miecz - cena 200"
-		print "3. zwykly mlot - cena 50"
-		print "4. dobry mlot - cena 200"
-		print "5. zwykly topor - 60"
-		print "6. dobry topor - 220"
-		print "7. mikstura leczenia - cena 75"
-		print "8. wracam do wioski"
 		
-		wybor = raw_input('> ')
-		if wybor == '1':
-			if gracz.czy_stac(50):
-				gracz.wydatki(50)
-				gracz.zmiana_broni(Miecz())
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep'
-		elif wybor == '2':
-			if gracz.czy_stac(200):
-				gracz.wydatki(200)
-				gracz.zmiana_broni(DobryMiecz())
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep'
-				
-		elif wybor == '3':
-			if gracz.czy_stac(50):
-				gracz.wydatki(50)
-				gracz.zmiana_broni(MlotBojowy())
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep'  
-		elif wybor == '4':
-            if gracz.czy_stac(200):
-                gracz.wydatki(200)
-				gracz.zmiana_broni(DobryMlotBojowy())
-				print 'gratuluje udanego zakupu'
-                raw_input('[enter]')
-                return 'sklep'
-            else:
-                print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-                return 'sklep' 
-		elif wybor == '5':
-			if gracz.czy_stac(60):
-				gracz.wydatki(60)
-				gracz.zmiana_broni(Topor())
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep' 
-		elif wybor == '6':
-			if gracz.czy_stac(220):
-				gracz.wydatki(220)
-				gracz.zmiana_broni(DobryTopor())
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep'
-		elif wybor == '7':
-			if gracz.czy_stac(75):
-				gracz.wydatki(75)
-				gracz.zakup_mikstury()
-				print 'gratuluje udanego zakupu'
-				raw_input('[enter]')
-				return 'sklep'
-			else:
-				print 'Panie nie stac cie na taki zakup'
-				raw_input('[enter]')
-				return 'sklep' 			
-		else:
-			return 'sklep'            
 			
 class Trening(object):
 	def wejscie(self):
