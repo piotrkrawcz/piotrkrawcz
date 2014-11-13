@@ -516,6 +516,7 @@ class Sklep(object):
 			
 			
 class Trening(object):
+	# narazie ta klasa wyglada tak brzydko, ale zamierzam przeksztalcic ja na 'mam nadzieje' bardziej obiektowy sposob jak w klasie Sklep()
 	def wejscie(self):
 		
 		os.system('clear')
