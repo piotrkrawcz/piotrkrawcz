@@ -430,33 +430,39 @@ class Wioska(object):
 
 class Sklep(object):
     def __init__(self):
-		def __init__(self):
 		self.przedmioty = [
 			dict(
+				klasa = Miecz,
 				towar = 'Miecz',
 				cena = 50,
 			),
 			dict(
-				towar = 'MlotBojowy',
+				klasa = MlotBojowy,
+				towar = 'Mlot Bojowy',
 				cena = 50,
 			),
 			dict(
+				klasa = Topor,
 				towar = 'Topor',
 				cena = 60,
 			),
 			dict(
-				towar = 'DobryMiecz',
+				klasa = DobryMiecz,
+				towar = 'Dobry Miecz',
 				cena = 200,
 			),
 			dict(
-				towar = 'DobryMlotBojowy',
+				klasa = DobryMlotBojowy,
+				towar = 'Dobry Mlot Bojowy',
 				cena = 200,
 			),
 			dict(
-				towar = 'DobryTopor',
+				klasa = DobryTopor,
+				towar = 'Dobry Topor',
 				cena = 220,
 			),
 			dict(
+				
 				towar = 'mikstura',
 				cena = 75,
 			),
@@ -466,10 +472,48 @@ class Sklep(object):
 		for index, pozycja in enumerate(self.przedmioty):
 			self.lista_przedmiotow.append(index)
 	
-	
     def wejscie(self):
 		os.system('clear')
-		
+		print gracz.opis()
+		print 'ponizej lista towarow do zakupu'
+		for x in range(self.lista_przedmiotow[0],self.lista_przedmiotow[-1] + 1):
+			print '%d. towar: %s, cena: %s' %(x, self.przedmioty[x]['towar'], self.przedmioty[x]['cena'])
+		wybor = raw_input('> ')
+		wybor = int(wybor)
+		if wybor in range(self.lista_przedmiotow[0],self.lista_przedmiotow[-1]) and gracz.czy_stac(self.przedmioty[wybor]['cena']):
+			gracz.zmiana_broni(self.przedmioty[wybor]['klasa']())
+			gracz.wydatki(self.przedmioty[wybor]['cena'])
+			print 'Gratuluje zakupu %s stal sie Twoja wlasnoscia' % self.przedmioty[x]['towar']
+			print gracz.opis()
+			wybor = raw_input('[wioska / sklep]')
+			if wybor == 'wioska':
+				return 'wioska'
+			else:
+				print 'nie stac Cie'
+				wybor = raw_input('[wioska / sklep]')
+				if wybor == 'wioska':
+					return 'wioska'
+				else:
+					return 'sklep'
+				return 'sklep'
+		elif wybor == (self.lista_przedmiotow[-1]) and gracz.czy_stac(self.przedmioty[wybor]['cena']):
+			gracz.zakup_mikstury()
+			print gracz.mikstura
+			gracz.wydatki(self.przedmioty[wybor]['cena'])
+			wybor = raw_input('[wioska / sklep]')
+			if wybor == 'wioska':
+				return 'wioska'
+			else:
+				return 'sklep'
+		else:
+			print 'nie stac Cie'
+			wybor = raw_input('[wioska / sklep]')
+			if wybor == 'wioska':
+				return 'wioska'
+			else:
+				return 'sklep'
+			return 'sklep'
+			
 			
 class Trening(object):
 	def wejscie(self):
