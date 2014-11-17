@@ -4,75 +4,95 @@ import os
 class Wydruki(object):
 	# tu przeniose wszystkie printy w miare pisania gry
 	pass
+
 class Bron(object):
-	przypadek = dict (
-		mianownik = '....',
-		dopelniacz = '....',
-		narzednik = ' .... ',)
+	def __init__(self):
+	
+		self.przypadek = dict (
+					mianownik = '....',
+					dopelniacz = '....',
+					narzednik = ' .... ',
+					)
+
 	def nazwa(self, odmiana):
 		return self.przypadek[odmiana]
 	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return 0
-
-class BronNaturalna(Bron):
-	def __init__(self, przypadek, obr_min, obr_max):
-		super(BronNaturalna, self).__init__()
-		self.przypadek = przypadek
-		self.obr_min = obr_min
-		self.obr_max = obr_max
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - atakowany.pancerz
+		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - self.mnoznik*atakowany.pancerz
 	
 class Miecz(Bron):
 	przypadek = dict (
 		mianownik = 'miecz',
 		dopelniacz = 'miecza',
 		narzednik = 'mieczem',
-		)
+	)
+	obr_min = 2
+	obr_max = 6
+	mnoznik = 0.5
 	
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(2,6)) - atakowany.pancerz*0.5
-
 class DobryMiecz(Miecz):
+	obr_min = 4,
+	obr_max = 8, 
+	mnoznik = 0.5
 	
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(4,8)) - atakowany.pancerz*0.5
-		
+class Szczeki(Bron):
+	przypadek = dict(
+			mianownik = 'szczeka',
+			dopelniacz = 'szczek',
+			narzednik = 'szczeka',
+			),
+	obr_min = 1
+	obr_max = 9
+	mnoznik = 1
+					
 class MlotBojowy(Bron):
 	przypadek = dict (
-		mianownik = 'mlot bojowy',
-		dopelniacz = 'mlota bojowego',
-		narzednik = 'mlotem bojowym',
-		)		
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(3,5)) - atakowany.pancerz*0.5
-
-class DobryMlotBojowy(MlotBojowy):
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(3,5))
+		mianownik = 'miecz',
+		dopelniacz = 'miecza',
+		narzednik = 'mieczem',
+	)
+	obr_min = 3
+	obr_max = 5
+	mnoznik = 0.5
 		
+class DobryMlotBojowy(MlotBojowy):
+	obr_min = 4,
+	mnoznik = 0
+				
 class Topor(Bron):
 	przypadek = dict (
-		mianownik = 'topor',
-		dopelniacz = 'topora',
-		narzednik = 'toporem',)
-	
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,7)) - atakowany.pancerz*0.5
-
-class DobryTopor(Topor):
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,9)) - atakowany.pancerz*0.1
+			mianownik = 'topor',
+			dopelniacz = 'topora',
+			narzednik = 'toporem',
+			)
+	obr_min = 1, 
+	obr_max = 7, 
+	mnoznik = 0.5
 		
+class DobryTopor(Topor):
+	obr_min = 1, 
+	obr_max = 9, 
+	mnoznik = 0.2
+	
 class Palka(Bron):
 	przypadek = dict (
 		mianownik = 'palka',
 		dopelniacz = 'palki',
 		narzednik = 'palka',
 		)	
-	def wylicz_obrazenia(self, atakujacy, atakowany):
-		return (atakujacy.sila + randint(1,4)) - atakowany.pancerz*2
-		
+	obr_min = 1, 
+	obr_max = 4, 
+	mnoznik = 1.5
+
+class Pazury(Bron):
+	przypadek = dict(
+			mianownik = 'pazury',
+			dopelniacz = u'pazurow',
+			narzednik = 'pazurami',
+		),
+	obr_min = 10
+	obr_max = 25
+	mnoznik = 1	
+	
 class Istota(object):
 	def __init__(self, nazwa, sila, pz, bron, zloto, pancerz):
 		self.nazwa = nazwa
@@ -104,6 +124,14 @@ class Istota(object):
 	def opis(self):
 		return self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto
 		
+	def zakup_mikstury(self):
+		self.mikstura = self.mikstura + 1
+		
+	def uzycie_mikstury(self):
+		self.mikstura = self.mikstura - 1
+		self.dodaj_pz(10)
+		print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.mikstura)
+	
 class Postac(Istota):
 	def __init__(self, imie):
 		super(Postac, self).__init__(
@@ -114,17 +142,7 @@ class Postac(Istota):
 			zloto = 50 + randint(25,50),
 			pancerz = 1
 			)
-		self.poziom = 0
-		self.mikstura = 1
-		
-	def trudnosc(self):
-		self.poziom += 1
-	def zakup_mikstury(self):
-		self.mikstura = self.mikstura + 1
-	def uzycie_mikstury(self):
-		self.mikstura = self.mikstura - 1
-		print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.mikstura)
-
+			
 class Potwor(Istota):
 	pass
 		
@@ -181,36 +199,23 @@ class Goblin(Potwor):
 class PoteznyGoblin(Goblin):
 	def __init__(self):
 		super(PoteznyGoblin, self).__init__()
-		self.nazwa = 'Potezny Goblin'
+		self.nazwa = u'Potezny Goblin'
 		self.sila = 3
 		self.pz = 15 + randint(1,10)
 		self.zloto = 20 + randint(1,10)
 		
 class Wilk(Potwor):
-	
-	
 	def __init__(self):
-		szczeki = BronNaturalna( 
-			przypadek = 
-				dict(
-					mianownik = 'szczeka',
-					dopelniacz = 'szczek',
-					narzednik = 'szczeka',
-					),
-			obr_min = 1,
-			obr_max = 8,
-				)
 		super(Wilk, self).__init__(
 		nazwa = 'Wilk',
 		sila = 3,
 		pz = 15 + randint(1,10),
-		bron = szczeki,
+		bron = Szczeki(),
 		zloto = 10 +randint(1,20),
 		pancerz = 0,
 		)
 
 class WscieklyWilk(Wilk):
-	
 	def __init__(self):
 		super(WscieklyWilk, self).__init__()
 		self.nazwa = 'Zajadly Toczacy Sline Wielki Wsciekly Wilk'
@@ -219,49 +224,28 @@ class WscieklyWilk(Wilk):
 		self.zloto = 30 + randint(10,30)
 		
 class WielkiPajak(Potwor):
-	
-	
 	def __init__(self):
-		szczeki = BronNaturalna( 
-			przypadek = 
-				dict(
-					mianownik = 'szczeka',
-					dopelniacz = 'szczek',
-					narzednik = 'szczeka',
-					),
-			obr_min = 1,
-			obr_max = 10,
-				)
+		
 		super(WielkiPajak, self).__init__(
 			nazwa = 'Wielki Pajak',
 			sila = 6,
 			pz = 50 + randint(10,30),
-			bron = szczeki,
+			bron = Szczeki(),
 			zloto = randint(0,10),
-			pancerz = 3
+			pancerz = 3,
 			)
 
 class Smok(Potwor):
 	def __init__(self):
-		pazury = BronNaturalna(
-			przypadek = dict(
-			mianownik = 'pazury',
-			dopelniacz = 'pazurow',
-			narzednik = 'pazurami',
-			
-			),
-			obr_min = 10,
-			obr_max = 25,
-		
-		)
 		super(Smok, self).__init__(
 			nazwa = 'Smok',
 			sila = 10,
 			pz = 100,
-			bron = pazury,
+			bron = Pazury(),
 			zloto = 10,
 			pancerz = 10,
-		)	
+			)
+		
 class Sekretnamisja(object):
 	
 	def wejscie(self):
@@ -339,95 +323,11 @@ class Sekretnamisja(object):
 		return self.misja
 
 class Wioska(object):
-	
-	
+	# odwolanie do sklepu treningu lasu 'krupiera'
 	def wejscie(self):
-		
-		print "Jestes w wiosce, nie pamietasz jak tu dotares, nie znasz nazwy tej wioski"
-		print "Wokol widac kilka charakterystycznych miejsc: sklep platnerza, tablica z rysunkami potworow"
-		print "wyglada na informacyjna"
-		print "obok tablicy stoi osilek, pewnie potrafilby nauczyc cie walczyc"
-		print "widac rowniez slepego zebraka, oraz krupiera"
-		print "jest tez mapa z zaznaczonymi miejscami obok wioski:"
-		print "co robisz?"
-		print "1. Ide do sklepu"
-		print "2. Podchodze do tablicy"
-		print "3. Podchodze do osilka"
-		print "4. Chce opuscic wioske, wiec podchodze do mapy"
-		print "5. Podchodze do krupiera"
-		print "6. Sprawdzam postac"
-		print "7. Pije miksture leczenia"
-		wybor = raw_input("> ")
-		if wybor == "1":
-			return 'sklep'
-		elif wybor == "2":
-			os.system('clear')
-			print "drodzy mieszkancy wsi nowosiolki"
-			print "uprzejmie donosi sie ze we wiosku naszej zlo straszliwe sie dzieje"
-			print "wszedy pelno plugastwa wszelakiego i niebezpiecznie sie wloczyc"
-			print "orki wilki i gobliny napastuje one nas bardzo"
-			print "tedy uwaza sie jakby komu zechcialo po lesie sie wloczyc niech nie walczy z orkami i wilkami"
-			print "majac tylko prowizorycznom bron"
-			print "soltys wsi Jan Konieczny"
-			raw_input('[enter]')
-			return 'wioska'
-		elif wybor == "3":
-			return 'trening'
-		elif wybor == "4":
-			print "Mapa jasno i precyzyjnie opisuje droge do lasu"
-			raw_input('[enter]')
-			return 'las'
-		elif wybor == "5":
-			print "krupier widzac ciebie patrzy sie chytrym wzrokiem"
-			print "zagrajmy w kosci - mowi - ile stawiasz"
-			print "nie mozesz wiecej niz", zloto
-			ile = input('> ')
-			if ile == 0:
-				print 'po co mi dupe zawracasz, wynocha, go away'
-				raw_input('[enter]')
-				return 'wioska'
-			elif ile > zloto:
-				print 'nie masz tyle zlota debilu wynocha'
-				raw_input('[enter]')
-				return 'wioska'
-			else:
-				print "krupier pobiera od Ciebie sume", ile
-				gracz.zarobki(-ile)
-				krupier, graczk = 0,0
-				while krupier == graczk:
-					os.system('clear')
-					krupier1, krupier2,gracz1,gracz2 = randint(2,6),randint(2,6),randint(1,6),randint(1,6),
-					print "wygrywa ten kto wiecej rzuci na kosciach"
-					print "krupier wyrzuca na pierwszej kosci %s a na drugiej %s" % (krupier1, krupier2)
-					krupier = krupier1 + krupier2
-					graczk = gracz1 + gracz2
-					print "rzucasz na pierwszej", gracz1
-					print "na drugiej", gracz2
-					raw_input('[enter]')
-					if krupier > graczk:
-						print "baaaaardzo mi przykro ale przegrales, zabieram pieniazki, a ty uciekaj do wioski"
-						raw_input('[enter]')
-						return 'wioska'
-					elif krupier < graczk:
-						print 'udalo ci sie obwiesiu, bierz kase i spadaj'
-						ile = 2*ile
-						gracz.zarobki(ile)
-						return 'wioska'    
-					else:
-						print "cholera wyrzucilismy po tyle samo, sprobujmy jeszcze raz"
-						raw_input('[enter]')                	
-		elif wybor == "6":
-			print gracz.opis()
-			raw_input('[enter]')
-			return 'wioska' 
-		elif wybor == "7":
-			gracz.dodaj_pz(10)
-			
-			return 'wioska'
-			
-		else:
-			return 'wioska'
-
+		print 'opis wioski'
+		wybor = raw_input('[sklep / trening / las / krupier] ')
+		return wybor
 class Sklep(object):
     def __init__(self):
 		self.przedmioty = [
@@ -462,7 +362,7 @@ class Sklep(object):
 				cena = 220,
 			),
 			dict(
-				
+				klasa = Mikstura,
 				towar = 'mikstura',
 				cena = 75,
 			),
@@ -472,268 +372,89 @@ class Sklep(object):
 		for index, pozycja in enumerate(self.przedmioty):
 			self.lista_przedmiotow.append(index)
 	
-    def wejscie(self):
+    def wejscie(self, kupujacy):
 		os.system('clear')
-		print gracz.opis()
 		print 'ponizej lista towarow do zakupu'
-		for x in range(self.lista_przedmiotow[0],self.lista_przedmiotow[-1] + 1):
-			print '%d. towar: %s, cena: %s' %(x, self.przedmioty[x]['towar'], self.przedmioty[x]['cena'])
+		for nr_przedmiotu in range(0, len(self.przedmioty)):
+			print '%d. towar: %s, cena: %s' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'])
 		wybor = raw_input('> ')
-		wybor = int(wybor)
-		if wybor in range(self.lista_przedmiotow[0],self.lista_przedmiotow[-1]) and gracz.czy_stac(self.przedmioty[wybor]['cena']):
-			gracz.zmiana_broni(self.przedmioty[wybor]['klasa']())
-			gracz.wydatki(self.przedmioty[wybor]['cena'])
-			print 'Gratuluje zakupu %s stal sie Twoja wlasnoscia' % self.przedmioty[x]['towar']
-			print gracz.opis()
-			wybor = raw_input('[wioska / sklep]')
-			if wybor == 'wioska':
-				return 'wioska'
-			else:
-				print 'nie stac Cie'
-				wybor = raw_input('[wioska / sklep]')
-				if wybor == 'wioska':
-					return 'wioska'
-				else:
-					return 'sklep'
-				return 'sklep'
-		elif wybor == (self.lista_przedmiotow[-1]) and gracz.czy_stac(self.przedmioty[wybor]['cena']):
-			gracz.zakup_mikstury()
-			print gracz.mikstura
-			gracz.wydatki(self.przedmioty[wybor]['cena'])
-			wybor = raw_input('[wioska / sklep]')
-			if wybor == 'wioska':
-				return 'wioska'
-			else:
-				return 'sklep'
-		else:
-			print 'nie stac Cie'
-			wybor = raw_input('[wioska / sklep]')
-			if wybor == 'wioska':
-				return 'wioska'
-			else:
-				return 'sklep'
-			return 'sklep'
-			
-			
+		if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
+			kupujacy.zmiana_broni(self.przedmioty[wybor]['klasa'])
+			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
+							
 class Trening(object):
-	# narazie ta klasa wyglada tak brzydko, ale zamierzam przeksztalcic ja na 'mam nadzieje' bardziej obiektowy sposob jak w klasie Sklep()
-	def wejscie(self):
 		
-		os.system('clear')
-		print 'witaj mlodziencu widze ze masz ochote na trening'
-		print 'mam nadzieje ze masz zloto'
-		print 'ile chcesz trenowac?'
-		print '1. chce trenowac do poznej nocy [koszt 1000, atak +5]'
-		print '2. chce trenowac do wieczora [koszt 400, atak +2]'
-		print '3. chce trenowac do poludnia [koszt 200, atak +1]'
-		print '4. nie chce trenowac'
-		print '5. sprawdzam postac'
+	def wejscie(self, trenujacy):
+		print u'o ile chcesz zwiekszyc sile? [1pkt sily za 150 zlota]'
 		wybor = raw_input('> ')
-		if wybor == '1':
-			if gracz.czy_stac(1000):
-				gracz.sila = gracz.sila + 5
-				gracz.odejmij_zloto(1000)
-				raw_input('[enter]')
-				return 'trening'
-			else:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
-				return 'trening'
-		elif wybor == '2':
-			if gracz.czy_stac(400):
-				gracz.sila = gracz.sila + 2
-				gracz.odejmij_zloto(400)
-				raw_input('[enter]')
-				return 'trening'
-			else:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
-				return 'trening'
-		elif wybor == '3':
-			if gracz.czy_stac(200):
-				gracz.sila = gracz.sila + 1
-				gracz.odejmij_zloto(200)
-				raw_input('[enter]')
-				return 'trening'
-			else:
-				print 'nie bede z toba trenowac nie masz pieniedzy'
-				return 'trening'		
-		elif wybor == '4':
-			return 'wioska'
-		elif wybor == '5':
-			gracz.opis()
-			return 'trening'
-		else:
-			return 'trening'
-			
+		if trenujacy.czy_stac(wybor*150):
+			trenujacy.sila = trenujacy.sila + wybor
+						
 class Las(object):
-	def wejscie(self):
-		os.system('clear')
-		print "jestes w lesie, mozesz sie na niego popatrzec i powdychac swierze powietrze"
-		print "Gdzie idziesz"
-		print "1. Wioska"
-		print "2. Dalej zwiedzam las"
-		print "3. Sprawdzam postac"
-		print "4. Pije miksture leczenia"
-		wybor = raw_input("> ")
-		if wybor == "1":
-			return 'wioska'
-		elif wybor == "2":
-			atak = Walka(0)
-			wynik = atak.pojedynek()
-			if wynik == 'wygrana':
-				print 'po pokonaniu przeciwnika mozesz udac sie nad rzeke, idziesz tam?'
-				rzeka = raw_input('[tak/nie]> ')
-				if rzeka == 'tak':
-					return 'rzeka'
-				else:	
-					return 'las'
-			return 'las'		
-		elif wybor == '3':
-			gracz.wydruk_opisu()
-			return 'las'
-		elif wybor == '4':
-			gracz.leczenie(1,0)
-			return 'las'
-		else:	
-			return 'las'
+	pass
 
 class Wieza(object):
-	def wejscie(self):
-		os.system('clear')
-		print 'zmeczony podroza zblizasz sie w koncu do ponurej wiezy'
-		print 'wylaniajacej sie leniwie zza pagorka'
-		print 'podchodzac blizej dostrzegasz ze jest jest ona po czesci zawalona'
-		print 'jest widoczne zejscie ponizej skad slychac dzikie wrzaski'
-		print 'co robisz?'
-		print "1. wracam do wioski"
-		print "2. schodze po schodach w glab wiezy"
-		print "3. wracam nad rzeke"
-		print "4. Sprawdzam postac"
-		print "5. Pije miksture leczenia"
-		wybor = raw_input('> ')
-		if wybor == '1':
-			return 'wioska'
-		elif wybor == '2':
-			print 'schodzac chwile po schodach dostrzegasz 3 istoty'
-			print 'z ktorymi juz zdarzalo ci sie walczyc'
-			print 'jednak ta wygladaja znacznie agresywniej niz poprzednie'
-			raw_input('[enter]')
-			x = 3
-			while x <> 0:
-				x = x - 1
-				potwor1 = Walka(0)
-				wynik = potwor1.akcja()
-				if wynik == 'wygrana':
-					if x <> 0:
-						print 'zostaly jeszcze %s potwory' % x
-					else:
-						print 'pokanales wszystkie stojace na twojej drodze potwory'
-					raw_input('[enter]')
-				else:
-					print 'uciekasz schodami spowrotem w okolice wiezy'
-					print 'wychodzac juz na powierzchnie widzisz ze potwory cie nie gonia'
-					print 'lecz potykasz sie uderzasz glowa w konar drzewa'
-					print 'tracisz przytmnosc, budzisz sie nastepnego ranka'
-					print 'zmokniety i zmarzniety'
-					raw_input('[enter]')
-					return 'wieza'
-			os.system('clear')		
-			print 'po pokonaniu plugawych istot widzisz przed soba duzy portal'
-			print 'za ktorym to w oddali widac ogromnego ziejacego ogniem smoka'
-			print 'na predce oceniasz swoje szanse w starciu z bestia i wynika ze'
-			imie, bron, postac_atak, pz, zloto, misja = gracz.opis()
-			if postac_atak < 90:
-				print 'nie masz zadnych szans w walce z bestia'
-			elif postac_atak in range(90, 120):
-				print 'potrzebujesz duzo szczescia aby zwyciezyc'
-			elif postac_atak in range(120,150):
-				print 'szanse sa wyrownane'
-			elif postac_atak > 150:
-				print 'smok nie ma z toba zadnych szans'
-				print 'od czasu kiedy wyladowales w wiosce'
-				print 'stales sie jednym z najpotezniejszych'
-				print 'smiertelnikow na Ziemi'
-			print 'co zamierzasz teraz zrobic?'
-			print 'jesli wrocisz do wioski, mozesz byc pewien'
-			print 'ze potwory pojawia sie na nowo'
-			print '1. ide na spotkanie ze smokiem'
-			print '2. wracam do wioski'
-			wybor = raw_input('> ')
-			if wybor == '1':
-				return 'legowisko smoka'
-			else:
-				return 'wioska'
-				
-		elif wybor == '3':
-			return 'rzeka'
-		elif wybor == '4':
-			gracz.wydruk_opisu()
-			return 'wieza'
-		elif wybor == '5':
-			gracz.leczenie(1,0)
-			return 'wieza'
-		else:
-			return 'wieza'
+	pass
+	# w wiezy trzeba zabic 3 potwory aby dostac sie do legowiska smoka
 			
 class Rzeka(object):
-	def wejscie(self):
-		os.system('clear')
-		print "jestes nad rzeka, woda jest bardzo gleboka"
-		print "w oddali widac las, mozesz rowniez isc dalej wzdluz rzeki w kierunku oslawionej wiezy"
-		print "Gdzie idziesz?"
-		print "1. wracam do wioski"
-		print "2. Ide wzdluz rzeki"
-		print "3. Ide do lasu"
-		print "4. Sprawdzam postac"
-		print "5. Pije miksture leczenia"
-		wybor = raw_input("> ")
-		if wybor == "1":
-			return 'wioska'
-		elif wybor == "2":
-			atak = Walka(0)
-			wynik = atak.akcja()
-			if wynik == 'wygrana':
-				print 'po pokonaniu przeciwnika mozesz udac sie w strone wiezy, idziesz tam?'
-				rzeka = raw_input('[tak/nie]> ')
-				if rzeka == 'tak':
-					return 'wieza'
-				else:	
-					return 'rzeka'
-			return 'rzeka'
-		elif wybor == '3':
-			return 'las'
-		elif wybor == '4':
-			gracz.wydruk_opisu()
-			return 'rzeka'
-		elif wybor == '5':
-			gracz.leczenie(1,0)
-			return 'rzeka'
-		else:	
-			return 'rzeka'
+	pass
+	
 		
 class Silnik(object):
-	mapa = {
-		'wioska' : Wioska(),
-		'las': Las(),
-		'rzeka': Rzeka(),
-		'sklep': Sklep(),
-		'trening' : Trening(),
-		'wieza': Wieza(),
-		'legowisko smoka': Legowisko(),
-		'sekretnamisja' : Sekretnamisja(),
-		}
+	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
+	mapa = [
+		dict(
+			lokacja = Wioska(),
+		
+		),
+		dict(
+			lokacja = Sklep(),
+		
+		),
+		dict(
+			lokacja = Trening(),
+		
+		),
+		dict(
+			lokacja = Las(),
+		
+		),
+		dict(
+			lokacja = Rzeka(),
+		
+		),
+		dict(
+			lokacja = Sekretnamisja(),
+		
+		),
+		dict(
+			lokacja = Wieza(),
+		
+		),
+		dict(
+			lokacja = Legowisko(),
+		
+		),
+	
+	]	
+		
 	def __init__(self):
-		self.pierwszamapa = Silnik.mapa.get('wioska')
-	
-	
-	def pobierz_scene(self, mapa):
-		return Silnik.mapa.get(mapa)
+		self.dostepnosc_lokacji = 4
+		self.obecnalokacja = self.mapa[0]['lokacja']
 		
-	def gra(self):
-		obecnalokacja = self.pierwszamapa
+	def sprawdzenie_dostepnosci_lokacji(self):
+		for nr_lokacji in range (0,self.dostepnosc_lokacji):
+			print u'dostepny cel podrozy: %s' % self.mapa[nr_lokacji]['lokacja']	
+		wybor = raw_input('wybierz lokacje> ')
+		wybor = int(wybor)
+		return (self.mapa[wybor]['lokacja']())
+			
+	def gra(self):		
+		while self.obecnalokacja == self.mapa[-3]['lokacja']:
+			pass
 		
-		while True:
-			kolejnalokacja = obecnalokacja.wejscie()
-			obecnalokacja = self.pobierz_scene(kolejnalokacja)
+	
 
 class GeneratorWrogow(object):
 	wrogowie = [
@@ -764,21 +485,25 @@ class GeneratorWrogow(object):
 		self.szansa = []
 		for index, potwor in enumerate(self.wrogowie):
 			self.szansa.extend([index] * potwor['szansa'])
-	
-	def losowanie(self, poziom):
+		self.poziom = 0
+		
+	def trudnosc(self, ile):
+		self.poziom = self.poziom + ile
+		
+	def losowanie(self):
 		wylosowany = sample(self.szansa, 1)[0]
-		wylosowany = wylosowany + poziom
+		wylosowany = wylosowany + self.poziom
 		if wylosowany > len(self.wrogowie) - 1:
 			wylosowany = len(self.wrogowie) - 1
 		klasa_wylooswanego = self.wrogowie[wylosowany]['potwor']
-		
+		self.trudnosc(1)
 		return klasa_wylooswanego() 
 
 class Walka(object):
 	def __init__(self, specjalny):
 		self.generowanie = GeneratorWrogow()
 		self.wrog = self.generowanie.losowanie(gracz.poziom)
-	
+		
 	def atak(self, atakujacy, atakowany):
 		obrazenia = atakujacy.bron.wylicz_obrazenia(atakujacy, atakowany)
 		if obrazenia > 0:
@@ -787,10 +512,6 @@ class Walka(object):
 		else:
 			print 'atak %s nie zadal zadnych obrazen' % atakujacy.nazwa
 		raw_input('[enter]')
-	def pojedynek(self):
-		istota1 = gracz
-		istota2 = self.wrog
-		self.silnik_walki(istota1, istota2)
 		
 	def silnik_walki(self, istota1, istota2):
 		inicjatywa1 = randint(1,1000)
@@ -802,19 +523,18 @@ class Walka(object):
 		while istota1.czy_zyje() and istota2.czy_zyje():
 			os.system('clear')
 			print 'przed Toba znajduje sie gotowy do walki %s, mozesz go zaatakowac uzywajac %s' % (self.wrog.nazwa, gracz.bron.nazwa('dopelniacz'))
-			print '1. Agresywny tryb walki [atak+20%, obrona-50%] '
+			print '1. Agresywny tryb walki [atak+30%, obrona-50%] '
 			print '2. Defensywny tryb walki [atak-20%, obrona+50%] '
 			print '3. Normalny tryb walki'
 			print '4. Pije miksture leczenia'
 			print '5. Uciekam'
 			wybor = raw_input('> ')
 			if wybor == '1':
-				gracz.sila, gracz.pancerz = gracz.sila + 0.2*gracz.sila, gracz.pancerz - 0.5*gracz.pancerz
+				gracz.sila, gracz.pancerz = gracz.sila*1.3, gracz.pancerz*0.5
 			elif wybor == '2':
-				gracz.sila, gracz.pancerz = gracz.sila - 0.2*gracz.sila, gracz.pancerz + 0.5*gracz.pancerz
+				gracz.sila, gracz.pancerz = gracz.sila*0.7, gracz.pancerz*1.5
 			elif wybor == '4':
 				if gracz.mikstura > 0:
-					gracz.dodaj_pz(10)
 					gracz.uzycie_mikstury()
 					raw_input('>')
 					
@@ -838,7 +558,7 @@ class Walka(object):
 			exit(1)
 		return 'wygrana'	
 
-gracz = Postac('piotr')
+
 gra = Silnik()
-gra.gra()
-		
+gra.sprawdzenie_dostepnosci_lokacji()
+
