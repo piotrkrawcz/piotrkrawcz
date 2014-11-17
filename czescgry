@@ -1,18 +1,12 @@
 from random import randint, sample
 import os
 
-class Wydruki(object):
-	# tu przeniose wszystkie printy w miare pisania gry
-	pass
-
 class Bron(object):
-	def __init__(self):
-	
-		self.przypadek = dict (
-					mianownik = '....',
-					dopelniacz = '....',
-					narzednik = ' .... ',
-					)
+	przypadek = dict (
+				mianownik = '....',
+				dopelniacz = '....',
+				narzednik = ' .... ',
+				)
 
 	def nazwa(self, odmiana):
 		return self.przypadek[odmiana]
@@ -30,8 +24,8 @@ class Miecz(Bron):
 	mnoznik = 0.5
 	
 class DobryMiecz(Miecz):
-	obr_min = 4,
-	obr_max = 8, 
+	obr_min = 4
+	obr_max = 8
 	mnoznik = 0.5
 	
 class Szczeki(Bron):
@@ -39,23 +33,23 @@ class Szczeki(Bron):
 			mianownik = 'szczeka',
 			dopelniacz = 'szczek',
 			narzednik = 'szczeka',
-			),
+			)
 	obr_min = 1
 	obr_max = 9
 	mnoznik = 1
 					
 class MlotBojowy(Bron):
 	przypadek = dict (
-		mianownik = 'miecz',
-		dopelniacz = 'miecza',
-		narzednik = 'mieczem',
+		mianownik = 'mlot',
+		dopelniacz = 'mlota',
+		narzednik = 'mlotem',
 	)
 	obr_min = 3
 	obr_max = 5
 	mnoznik = 0.5
 		
 class DobryMlotBojowy(MlotBojowy):
-	obr_min = 4,
+	obr_min = 4
 	mnoznik = 0
 				
 class Topor(Bron):
@@ -64,13 +58,13 @@ class Topor(Bron):
 			dopelniacz = 'topora',
 			narzednik = 'toporem',
 			)
-	obr_min = 1, 
-	obr_max = 7, 
+	obr_min = 1
+	obr_max = 7
 	mnoznik = 0.5
 		
 class DobryTopor(Topor):
-	obr_min = 1, 
-	obr_max = 9, 
+	obr_min = 1
+	obr_max = 9
 	mnoznik = 0.2
 	
 class Palka(Bron):
@@ -79,8 +73,8 @@ class Palka(Bron):
 		dopelniacz = 'palki',
 		narzednik = 'palka',
 		)	
-	obr_min = 1, 
-	obr_max = 4, 
+	obr_min = 1
+	obr_max = 4
 	mnoznik = 1.5
 
 class Pazury(Bron):
@@ -101,15 +95,18 @@ class Istota(object):
 		self.bron = bron
 		self.zloto = zloto
 		self.pancerz = pancerz
+		self.mikstura = 1
 		
 	def dodaj_pz(self, zmiana_pz):
 		self.pz = self.pz + zmiana_pz
+		
 	def odejmij_pz(self, zmiana_pz):
 		self.pz = self.pz - zmiana_pz
+		
 	def czy_zyje(self):
 		return self.pz >= 0
 		
-	def zmiana_broni(self, bron):
+	def zmiana_broni(self, bron):	
 		self.bron = bron
 	
 	def zarobki(self, dodaj_zloto):
@@ -122,10 +119,10 @@ class Istota(object):
 		return self.zloto >= kwota_wydatku
 	
 	def opis(self):
-		return self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto
+		return 'Nazwa: %s, punkty zycia: %d, posiadana bron: %s, posiadane zloto: %s ' % (self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto)
 		
 	def zakup_mikstury(self):
-		self.mikstura = self.mikstura + 1
+		self.mikstura = self.mikstura +=1
 		
 	def uzycie_mikstury(self):
 		self.mikstura = self.mikstura - 1
@@ -142,11 +139,47 @@ class Postac(Istota):
 			zloto = 50 + randint(25,50),
 			pancerz = 1
 			)
+
+class Kontener(object):
+	def prezentacja_towaru(self):
+		lista_przedmiotow = []
+		for index, pozycja in enumerate(self.przedmioty):
+			self.lista_przedmiotow.append(index)
+		os.system('clear')
+		print 'ponizej lista towarow do zakupu'
+		for nr_przedmiotu in range(0, len(self.przedmioty)):
+			print '%d. towar: %s, cena: %s' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'])
+	
+	def kup(self, kupujacy):
+		# na koncu do kupienia mikstury
+		wybor = raw_input('> ')
+		wybor = int(wybor)
+		if wybor in range(0, len(self.przedmioty)-1) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
+			kupujacy.zmiana_broni(self.przedmioty[wybor]['klasa']())
+			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
+		elif wybor == len(self.przedmioty)and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
+				kupujacy.zakup_mikstury()
+				kupujacy.wydatki(self.przedmioty[wybor]['cena'])	
+		else:
+			print 'niczego nie wybrales'
 			
+	def ograb(self, ograbiajacy, ograbiany):
+		print 'Lista przedmiotow do ograbienia:'
+		print '''
+			Mikstury leczenia: 
+			Bron: 
+			Zloto:
+		
+		
+		''' % (ograbiany.mikstura, ograbiany.bron.nazwa('mianownik'),ograbiany.zloto)
+	def sprzedaj(self, sprzedajacy):
+		pass
 class Potwor(Istota):
 	pass
 		
 class Legowisko():
+	def __init__(self):
+		self.nazwa = 'Legowisko Smoka'
 	def wejscie(self):
 		os.system('clear')
 		print 'przed toba wielka zielonoluska bestia'
@@ -211,7 +244,7 @@ class Wilk(Potwor):
 		sila = 3,
 		pz = 15 + randint(1,10),
 		bron = Szczeki(),
-		zloto = 10 +randint(1,20),
+		zloto = 10 + randint(1,20),
 		pancerz = 0,
 		)
 
@@ -248,6 +281,8 @@ class Smok(Potwor):
 		
 class Sekretnamisja(object):
 	
+	def __init__(self):
+		self.nazwa = 'Serkretna'
 	def wejscie(self):
 		gracz.sekretnamisja('zaliczenie')
 		print 'wchodzac do wioski podchodzi do Ciebie stary dziad i mowi:'
@@ -323,13 +358,14 @@ class Sekretnamisja(object):
 		return self.misja
 
 class Wioska(object):
-	# odwolanie do sklepu treningu lasu 'krupiera'
-	def wejscie(self):
+	def __init__(self):
+		self.nazwa = 'wioska'
+	def wejscie(self, gracz):
 		print 'opis wioski'
-		wybor = raw_input('[sklep / trening / las / krupier] ')
-		return wybor
+		
 class Sklep(object):
     def __init__(self):
+		self.nazwa = 'sklep'
 		self.przedmioty = [
 			dict(
 				klasa = Miecz,
@@ -362,28 +398,22 @@ class Sklep(object):
 				cena = 220,
 			),
 			dict(
-				klasa = Mikstura,
+				klasa = 'Mikstura',
 				towar = 'mikstura',
 				cena = 75,
 			),
 		
 		]
-		self.lista_przedmiotow = []
-		for index, pozycja in enumerate(self.przedmioty):
-			self.lista_przedmiotow.append(index)
+		
 	
     def wejscie(self, kupujacy):
-		os.system('clear')
-		print 'ponizej lista towarow do zakupu'
-		for nr_przedmiotu in range(0, len(self.przedmioty)):
-			print '%d. towar: %s, cena: %s' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'])
-		wybor = raw_input('> ')
-		if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
-			kupujacy.zmiana_broni(self.przedmioty[wybor]['klasa'])
-			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
-							
-class Trening(object):
 		
+		
+		
+
+class Trening(object):
+	def __init__(self):
+		self.nazwa = 'sala treningowa'	
 	def wejscie(self, trenujacy):
 		print u'o ile chcesz zwiekszyc sile? [1pkt sily za 150 zlota]'
 		wybor = raw_input('> ')
@@ -391,80 +421,33 @@ class Trening(object):
 			trenujacy.sila = trenujacy.sila + wybor
 						
 class Las(object):
-	pass
+	def __init__(self):
+		self.nazwa = 'las'
+	def wejscie(self, gracz):
+		print 'to jest las'
 
 class Wieza(object):
-	pass
-	# w wiezy trzeba zabic 3 potwory aby dostac sie do legowiska smoka
+	def __init__(self):
+		self.nazwa = 'wieza'
+	def wejscie(self, gracz):
+		print 'to jest wieza'
 			
 class Rzeka(object):
-	pass
-	
-		
-class Silnik(object):
-	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
-	mapa = [
-		dict(
-			lokacja = Wioska(),
-		
-		),
-		dict(
-			lokacja = Sklep(),
-		
-		),
-		dict(
-			lokacja = Trening(),
-		
-		),
-		dict(
-			lokacja = Las(),
-		
-		),
-		dict(
-			lokacja = Rzeka(),
-		
-		),
-		dict(
-			lokacja = Sekretnamisja(),
-		
-		),
-		dict(
-			lokacja = Wieza(),
-		
-		),
-		dict(
-			lokacja = Legowisko(),
-		
-		),
-	
-	]	
-		
 	def __init__(self):
-		self.dostepnosc_lokacji = 4
-		self.obecnalokacja = self.mapa[0]['lokacja']
-		
-	def sprawdzenie_dostepnosci_lokacji(self):
-		for nr_lokacji in range (0,self.dostepnosc_lokacji):
-			print u'dostepny cel podrozy: %s' % self.mapa[nr_lokacji]['lokacja']	
-		wybor = raw_input('wybierz lokacje> ')
-		wybor = int(wybor)
-		return (self.mapa[wybor]['lokacja']())
-			
-	def gra(self):		
-		while self.obecnalokacja == self.mapa[-3]['lokacja']:
-			pass
-		
+		self.nazwa = 'rzeka'
+	def wejscie(self, gracz):
+		print 'a to rzeka'
 	
 
 class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
 					potwor = Goblin,
-					szansa = 5,
+					szansa = 55,
 					),
 				dict(
 					potwor = Wilk,
-					szansa = 20,
+					szansa = 1,
 					),	
 				dict(
 					potwor = Ork,
@@ -500,9 +483,10 @@ class GeneratorWrogow(object):
 		return klasa_wylooswanego() 
 
 class Walka(object):
-	def __init__(self, specjalny):
-		self.generowanie = GeneratorWrogow()
-		self.wrog = self.generowanie.losowanie(gracz.poziom)
+
+	def __init__(self, gracz, wrog):
+		self.gracz = gracz
+		self.wrog = wrog
 		
 	def atak(self, atakujacy, atakowany):
 		obrazenia = atakujacy.bron.wylicz_obrazenia(atakujacy, atakowany)
@@ -513,7 +497,10 @@ class Walka(object):
 			print 'atak %s nie zadal zadnych obrazen' % atakujacy.nazwa
 		raw_input('[enter]')
 		
-	def silnik_walki(self, istota1, istota2):
+	def silnik_walki(self):
+		istota1 = self.gracz
+		istota2 = self.wrog
+		
 		inicjatywa1 = randint(1,1000)
 		inicjatywa2 = randint(1,1000)
 		if inicjatywa2 > inicjatywa1:
@@ -522,17 +509,20 @@ class Walka(object):
 		
 		while istota1.czy_zyje() and istota2.czy_zyje():
 			os.system('clear')
-			print 'przed Toba znajduje sie gotowy do walki %s, mozesz go zaatakowac uzywajac %s' % (self.wrog.nazwa, gracz.bron.nazwa('dopelniacz'))
+			print self.gracz.opis()
+			print 'naprzeciw sobie staja: %s, oraz %s' % (istota1.nazwa, istota2.nazwa)
 			print '1. Agresywny tryb walki [atak+30%, obrona-50%] '
-			print '2. Defensywny tryb walki [atak-20%, obrona+50%] '
+			print '2. Defensywny tryb walki [atak-30%, obrona+50%] '
 			print '3. Normalny tryb walki'
 			print '4. Pije miksture leczenia'
 			print '5. Uciekam'
 			wybor = raw_input('> ')
 			if wybor == '1':
 				gracz.sila, gracz.pancerz = gracz.sila*1.3, gracz.pancerz*0.5
+				print 'sila gracza', gracz.sila, 'pancerz gracza', gracz.pancerz
 			elif wybor == '2':
 				gracz.sila, gracz.pancerz = gracz.sila*0.7, gracz.pancerz*1.5
+				print 'sila gracza', gracz.sila, 'pancerz gracza', gracz.pancerz
 			elif wybor == '4':
 				if gracz.mikstura > 0:
 					gracz.uzycie_mikstury()
@@ -552,13 +542,91 @@ class Walka(object):
 			print 'gratulacje martwy %s lezy u Twych stop, zdobyles po pokonanym wrogu %s sztuk zlota' % (self.wrog.nazwa, self.wrog.zloto)
 			raw_input('[enter]')
 			gracz.zarobki(self.wrog.zloto)
-			gracz.trudnosc()
+			return 'wygrana'
 		else:
 			print 'umarles'
 			exit(1)
-		return 'wygrana'	
+			
 
+gracz = Postac('Rysiu')		
+		
+class Silnik(object):
+	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
+	mapa = [
+		dict(
+			lokacja = Wioska(),
+			opcja = [Sklep(), Trening(), Las()]
+		),
+		dict(
+			lokacja = Sklep(),
+			opcja = [Wioska()],
+		),
+		dict(
+			lokacja = Trening(),
+			opcja = [Wioska()],
+		),
+		dict(
+			lokacja = Las(),
+			opcja = [Wioska()],
+		),
+		dict(
+			lokacja = Rzeka(),
+			opcja = [Las(),Wieza()],
+		),
+		dict(
+			lokacja = Sekretnamisja(),
+			opcja = [Las()],
+		),
+		dict(
+			lokacja = Wieza(),
+			opcja = [Las(),Wieza()],
+		),
+		dict(
+			lokacja = Legowisko(),
+		
+		),
+	
+	]	
+		
+	def __init__(self):
+		self.wygrane_walki = 0
+		self.obecnalokacja = self.mapa[0]['lokacja']
+		self.lista_z_lokacjami = []
+		for index in range(0, len(self.mapa)):
+			lokacja = self.mapa[index]['lokacja']
+			self.lista_z_lokacjami.append(lokacja.nazwa)
+			
+	def sprawdzenie_dostepnosci_lokacji(self):
+		nr_lokacji = self.lista_z_lokacjami.index(self.obecnalokacja.nazwa)
+		print 'wybierz miejsce gdzie chcesz sie przemiescic'
+		for nr_opcji in range(0, len(self.mapa[nr_lokacji]['opcja'])):
+			opcja = self.mapa[nr_lokacji]['opcja'][nr_opcji]
+			print '%d. %s' % (nr_opcji, opcja.nazwa)
+		wybor = raw_input('wybierz lokacje > ')
+		wybor = int(wybor)
+		return self.mapa[nr_lokacji]['opcja'][wybor]
+			 
+			
+			
+	def gra(self):
+		
+		self.obecnalokacja.wejscie(gracz)
+		while self.obecnalokacja != self.mapa[-1]['lokacja']:
+			print gracz.opis(), 'wygrane walki: ', self.wygrane_walki
+			self.obecnalokacja = self.sprawdzenie_dostepnosci_lokacji()
+			if self.obecnalokacja.nazwa == 'wioska' or self.obecnalokacja.nazwa == 'sklep' or self.obecnalokacja.nazwa == 'sala treningowa':
+				self.obecnalokacja.wejscie(gracz)
+			else:	
+				generowanie_przeciwnika = GeneratorWrogow()
+				wrog = generowanie_przeciwnika.losowanie()
+				walka = Walka(gracz, wrog)
+				wynik = walka.silnik_walki()
+				if wynik == 'wygrana':
+					self.wygrane_walki +=1
+				self.obecnalokacja.wejscie(gracz)	
+		
+	
 
 gra = Silnik()
-gra.sprawdzenie_dostepnosci_lokacji()
+gra.gra()
 
