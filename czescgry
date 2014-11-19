@@ -86,16 +86,117 @@ class Pazury(Bron):
 	obr_min = 10
 	obr_max = 25
 	mnoznik = 1	
+
+class Kontener(object):
+	def __init__(self, iloscsztuk):
+		self.przedmioty = [
+			dict(
+				klasa = Miecz,
+				towar = 'Miecz',
+				cena = 50,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				klasa = MlotBojowy,
+				towar = 'Mlot Bojowy',
+				cena = 50,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				klasa = Topor,
+				towar = 'Topor',
+				cena = 60,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				klasa = DobryMiecz,
+				towar = 'Dobry Miecz',
+				cena = 200,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				klasa = DobryMlotBojowy,
+				towar = 'Dobry Mlot Bojowy',
+				cena = 200,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				klasa = DobryTopor,
+				towar = 'Dobry Topor',
+				cena = 220,
+				ilosc = iloscsztuk,
+			),
+			dict(
+				
+				towar = 'Mikstura leczenia',
+				cena = 75,
+				ilosc = iloscsztuk,
+			),
+			
+		]
+	def prezentacja_towaru(self):
+		print 'ponizej lista przedmiotow i ich wartosc'
+		for nr_przedmiotu in range(0, len(self.przedmioty)):
+			if self.przedmioty[nr_przedmiotu]['ilosc'] == 0:
+				wyswietlaj = 0
+			else:
+				wyswietlaj = 1
+				
+			print ('%d. %s, wartosc: %s, ilosc sztuk: %d' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'], self.przedmioty[nr_przedmiotu]['ilosc']))*wyswietlaj
+			
+	def czy_stac(self, kwota_wydatku):
+		return self.zloto >= kwota_wydatku
+		
+	def zarobki(self, dodaj_zloto):
+		self.zloto = self.zloto + dodaj_zloto
+		
+	def wydatki(self, odejmij_zloto):
+		self.zloto = self.zloto - odejmij_zloto
+		
+	def dodaj_przedmiot(self, nr_przedmiotu):
+		self.przedmioty[nr_przedmiotu]['ilosc'] = self.przedmioty[nr_przedmiotu]['ilosc'] + 1
+			
+	def zabierz_przedmiot(self, nr_przedmiotu):
+		self.przedmioty[nr_przedmiotu]['ilosc'] = self.przedmioty[nr_przedmiotu]['ilosc'] - 1
+			
+	def wymiana(self, sprzedajacy, kupujacy):
+		sprzedajacy.prezentacja_towaru()
+		wybor = raw_input('> ')
+		wybor = int(wybor)
+		if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']) and sprzedajacy.przedmioty[wybor]['ilosc']>0:
+			kupujacy.dodaj_przedmiot(wybor)
+			sprzedajacy.zabierz_przedmiot(wybor)
+			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
+			sprzedajacy.zarobki(self.przedmioty[wybor]['cena'])
+		else:
+			print 'niczego nie wybrales'
+			
+	def ograb(self, ograbiajacy, ograbiany):
+		print 'Lista przedmiotow do ograbienia:'
+		print '''
+			Mikstury leczenia: 
+			Bron: 
+			Zloto:
+		
+		
+		''' % (ograbiany.mikstura, ograbiany.bron.nazwa('mianownik'),ograbiany.zloto)
+
+
 	
-class Istota(object):
+class Istota(Kontener):
+	
+	
 	def __init__(self, nazwa, sila, pz, bron, zloto, pancerz):
+		super(Istota, self).__init__(
+		iloscsztuk = 0	
+		)
+		
 		self.nazwa = nazwa
 		self.sila = sila
 		self.pz = pz
 		self.bron = bron
 		self.zloto = zloto
 		self.pancerz = pancerz
-		self.mikstura = 1
 		
 	def dodaj_pz(self, zmiana_pz):
 		self.pz = self.pz + zmiana_pz
@@ -109,23 +210,11 @@ class Istota(object):
 	def zmiana_broni(self, bron):	
 		self.bron = bron
 	
-	def zarobki(self, dodaj_zloto):
-		self.zloto = self.zloto + dodaj_zloto
-		
-	def wydatki(self, odejmij_zloto):
-		self.zloto = self.zloto - odejmij_zloto
-	
-	def czy_stac(self, kwota_wydatku):
-		return self.zloto >= kwota_wydatku
-	
 	def opis(self):
 		return 'Nazwa: %s, punkty zycia: %d, posiadana bron: %s, posiadane zloto: %s ' % (self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto)
 		
-	def zakup_mikstury(self):
-		self.mikstura = self.mikstura +=1
-		
 	def uzycie_mikstury(self):
-		self.mikstura = self.mikstura - 1
+		self.iloscmikstur =- 1
 		self.dodaj_pz(10)
 		print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.mikstura)
 	
@@ -140,40 +229,8 @@ class Postac(Istota):
 			pancerz = 1
 			)
 
-class Kontener(object):
-	def prezentacja_towaru(self):
-		lista_przedmiotow = []
-		for index, pozycja in enumerate(self.przedmioty):
-			self.lista_przedmiotow.append(index)
-		os.system('clear')
-		print 'ponizej lista towarow do zakupu'
-		for nr_przedmiotu in range(0, len(self.przedmioty)):
-			print '%d. towar: %s, cena: %s' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'])
-	
-	def kup(self, kupujacy):
-		# na koncu do kupienia mikstury
-		wybor = raw_input('> ')
-		wybor = int(wybor)
-		if wybor in range(0, len(self.przedmioty)-1) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
-			kupujacy.zmiana_broni(self.przedmioty[wybor]['klasa']())
-			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
-		elif wybor == len(self.przedmioty)and kupujacy.czy_stac(self.przedmioty[wybor]['cena']):
-				kupujacy.zakup_mikstury()
-				kupujacy.wydatki(self.przedmioty[wybor]['cena'])	
-		else:
-			print 'niczego nie wybrales'
-			
-	def ograb(self, ograbiajacy, ograbiany):
-		print 'Lista przedmiotow do ograbienia:'
-		print '''
-			Mikstury leczenia: 
-			Bron: 
-			Zloto:
-		
-		
-		''' % (ograbiany.mikstura, ograbiany.bron.nazwa('mianownik'),ograbiany.zloto)
-	def sprzedaj(self, sprzedajacy):
-		pass
+gracz = Postac('Rysiu')	
+
 class Potwor(Istota):
 	pass
 		
@@ -363,54 +420,23 @@ class Wioska(object):
 	def wejscie(self, gracz):
 		print 'opis wioski'
 		
-class Sklep(object):
+class Sklep(Kontener):
     def __init__(self):
+		super(Sklep, self).__init__(
+			iloscsztuk = 5,	
+		)
 		self.nazwa = 'sklep'
-		self.przedmioty = [
-			dict(
-				klasa = Miecz,
-				towar = 'Miecz',
-				cena = 50,
-			),
-			dict(
-				klasa = MlotBojowy,
-				towar = 'Mlot Bojowy',
-				cena = 50,
-			),
-			dict(
-				klasa = Topor,
-				towar = 'Topor',
-				cena = 60,
-			),
-			dict(
-				klasa = DobryMiecz,
-				towar = 'Dobry Miecz',
-				cena = 200,
-			),
-			dict(
-				klasa = DobryMlotBojowy,
-				towar = 'Dobry Mlot Bojowy',
-				cena = 200,
-			),
-			dict(
-				klasa = DobryTopor,
-				towar = 'Dobry Topor',
-				cena = 220,
-			),
-			dict(
-				klasa = 'Mikstura',
-				towar = 'mikstura',
-				cena = 75,
-			),
+		self.zloto = 100000
+    def wejscie(self, klient):
+		print 'chcesz cos kupic[0] czy sprzedac[1]'
+		wybor = raw_input('> ')
+		if wybor == '0':
+			print 'wybierz co chcesz kupic'
+			self.wymiana(self, klient)
+		elif wybor == '1':
+			print 'wybierz co chcesz sprzedac'
+			self.wymiana(klient, self)
 		
-		]
-		
-	
-    def wejscie(self, kupujacy):
-		
-		
-		
-
 class Trening(object):
 	def __init__(self):
 		self.nazwa = 'sala treningowa'	
@@ -545,10 +571,7 @@ class Walka(object):
 			return 'wygrana'
 		else:
 			print 'umarles'
-			exit(1)
-			
-
-gracz = Postac('Rysiu')		
+			exit(1)	
 		
 class Silnik(object):
 	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
@@ -567,7 +590,7 @@ class Silnik(object):
 		),
 		dict(
 			lokacja = Las(),
-			opcja = [Wioska()],
+			opcja = [Wioska(), Rzeka()],
 		),
 		dict(
 			lokacja = Rzeka(),
