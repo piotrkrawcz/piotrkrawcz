@@ -30,9 +30,9 @@ class DobryMiecz(Miecz):
 	
 class Szczeki(Bron):
 	przypadek = dict(
-			mianownik = 'szczeka',
+			mianownik = 'szczeki',
 			dopelniacz = 'szczek',
-			narzednik = 'szczeka',
+			narzednik = 'szczekami',
 			)
 	obr_min = 1
 	obr_max = 9
@@ -131,11 +131,9 @@ class Kontener(object):
 				towar = 'Mikstura leczenia',
 				cena = 75,
 				ilosc = iloscsztuk,
-			),
-			
+			),	
 		]
 	def prezentacja_towaru(self):
-		print 'ponizej lista przedmiotow i ich wartosc'
 		for nr_przedmiotu in range(0, len(self.przedmioty)):
 			if self.przedmioty[nr_przedmiotu]['ilosc'] == 0:
 				wyswietlaj = 0
@@ -173,15 +171,10 @@ class Kontener(object):
 			
 	def ograb(self, ograbiajacy, ograbiany):
 		print 'Lista przedmiotow do ograbienia:'
-		print '''
-			Mikstury leczenia: 
-			Bron: 
-			Zloto:
-		
-		
-		''' % (ograbiany.mikstura, ograbiany.bron.nazwa('mianownik'),ograbiany.zloto)
-
-
+		ograbiany.self.prezentacja_towaru()
+		for nr_przedmiotu in range(0, len(ograbiany.przedmioty)):
+			if ograbiany.przedmioty[nr_przedmiotu]['ilosc'] > 0:
+				ograbiajacy.dodaj_przedmiot(nr_przedmiotu)
 	
 class Istota(Kontener):
 	
@@ -239,22 +232,7 @@ class Legowisko():
 		self.nazwa = 'Legowisko Smoka'
 	def wejscie(self):
 		os.system('clear')
-		print 'przed toba wielka zielonoluska bestia'
-		print 'paszcze ma wielkosci konia'
-		print 'a zeby wielkie i ostre, chca cie pozrec'
-		print 'nie ma stad gdzie uciec, wiec jedyne co pozostaje to walka'
-		raw_input('[enter]')
-		while True:
-			final = Walka()
-			wynik = final.pojedynek()
-			if wynik == 'wygrana':
-				print 'pokonales bestie stanowiaca zagrozenie dla'
-				print 'wioski - zostales jej bohaterem'
-				exit(1)
-			else:
-				print 'ucieczka nie jest realna'
-				print 'musisz ponownie przystapic do walki'
-				raw_input('[enter]')
+		print 'opis legowiska'
 			
 class Ork(Potwor):
 	def __init__(self):
@@ -341,78 +319,7 @@ class Sekretnamisja(object):
 	def __init__(self):
 		self.nazwa = 'Serkretna'
 	def wejscie(self):
-		gracz.sekretnamisja('zaliczenie')
-		print 'wchodzac do wioski podchodzi do Ciebie stary dziad i mowi:'
-		print 'dobry Panie slyszalem zescie bohatery potezne sa'
-		print 'moze pomoglibyscie staremu dziadowi odgonic wstretnego pajaka'
-		print 'ktory zagniezdzil sie pod moim domem, obiecuje nagrode godna bohatera'
-		print '1. dobrze zaprowadz mnie tam'
-		print '2. spieprzaj dziadu'
-		wybor = raw_input('> ')
-		if wybor == '1':
-			print 'zgodziles sie pomoc dziadowi w oczyszczeniu domu z robactwa'
-			print 'dziad prowadzil cie przez krete sciezki lesne'
-			print 'co chwile skrecajac w prawo i lewo'
-			print 'nie masz pojecia gdzie sie teraz znajdujesz'
-			raw_input('[enter]')
-			print 'z oddali poslyszales przerazliwy syk'
-			print 'nie trzeba bylo dlugo czekac a zlokalziowales zrodlo tego syku'
-			print 'gigantyczny pajak rzucil sie na Ciebie a dziad uciekl'
-			print 'do lasu'
-			print 'musisz walczyc'
-			raw_input('[enter]')
-			atak = Walka('spiderman')
-			wynik = atak.pojedynek()
-			if wynik == 'wygrana':
-				os.system('clear')
-				print 'po ciezkiej walce udaje ci sie powalic pajaka'
-				print 'dziada nigdzie nie ma, ale odnajdujesz skrzynie'
-				print 'i ciekawie zagladasz do srodka'
-				print 'okazuje sie ze znajduje sie tam piekna rusznica i sakwa wypelniona zlotem'
-				print 'co robisz?'
-				print '1. zabieram wszystko'
-				print '2. zabieram rusznice'
-				print '3. zabieram zloto'
-				print '4. nie jestem zlodziejem zostawiam to wszystko na miejscu'
-				wybor = raw_input('> ')
-				if wybor == '1':
-					print 'zabierasz bron i zloto'
-					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.zarobki(500)
-					gracz.zmiana_broni(Rusznica())
-			
-					return 'las'
-				elif wybor == '2':
-					print 'zabierasz bron '
-					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.zmiana_broni(Rusznica())
-									
-					return 'las'	
-				elif wybor == '3':
-					print 'zabierasz zloto'
-					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					gracz.zarobki(500)
-					return 'las'
-				else:
-					print 'nie majac wiecej do roboty wracasz przez las do wioski'
-					return 'las'
-			else:
-				print 'uciekales jak szalony od pajaka, ktory gonil Cie po calym lesie'
-				print 'az w koncu dal sobie spokoj'
-				print 'wokol ciebie pelno drzew'
-				raw_input('[enter]')
-				return 'las'
-		
-		
-		
-		else:
-			print 'czujesz ze straciles szanse swego zycia w tej wiosce'
-			print 'dziad byl godny zaufania i na pewno mial dobra nagrode'
-			raw_input('[enter]')
-			return 'wioska'
-			
-	def wykonanie(self):
-		return self.misja
+		pass
 
 class Wioska(object):
 	def __init__(self):
@@ -469,23 +376,23 @@ class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
 					potwor = Goblin,
-					szansa = 55,
+					szansa = 20,
 					),
 				dict(
 					potwor = Wilk,
-					szansa = 1,
+					szansa = 10,
 					),	
 				dict(
 					potwor = Ork,
-					szansa = 0,
+					szansa = 7,
 					),
 				dict(
 					potwor = PoteznyGoblin,
-					szansa = 1,
+					szansa = 7,
 					),
 				dict(
 					potwor = WscieklyWilk,
-					szansa = 1,
+					szansa = 4,
 					),
 						
 					]
