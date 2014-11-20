@@ -1,5 +1,6 @@
 from random import randint, sample
 import os
+
 # klasy lokacji powinny miec swoje przypadki odmian
 # dorobic specjalne soptkanie w lokacjach, skrzynie itp
 # kontener nie powinien zawierac zadnych list przedmiotow, powinien tylko zwracac zabranie, oddanie kupno, sprzedaz jesli sa spelnione warunki
@@ -9,7 +10,7 @@ import os
 # przedmioty moga być opakowane w cene przez inna klase
 # klasy lokacje maja zostawiac stringi(zapis np ile razy tu byl gracz)
 # dodatkowo lokacje trzeba zaszyc w silniku mozliwosci powiazan miedzy lokacjami, lokacje maja byc obiektami, a nie klasami
-# mikstura powinna nalezec do klasy przedmiot, z ktorej moze wynikac uzycie
+
 class Bron(object):
 	przypadek = dict (
 				mianownik = '....',
@@ -467,12 +468,14 @@ class Las(object):
 	def wejscie(self, gracz):
 		print 'to jest las'
 		return 'walka'
+		
 class Wieza(object):
 	def __init__(self):
 		self.nazwa = 'wieza'
 	def wejscie(self, gracz):
 		print 'to jest wieza'
 		return 'walka'	
+		
 class Rzeka(object):
 	def __init__(self):
 		self.nazwa = 'rzeka'
