@@ -2,6 +2,8 @@ from random import randint, sample
 import os
 # jeśli ktoś wyjdzie poza listę przy wybozie napisać kod, który nie wyrzuci z programu
 # przeniesie ekwipunku gracza (broni) na jego używanie
+# zmienic losowanie ekipunku potwora na jedna metoda z 2iema wartosciami
+# napisac metode ktora sama wybierze najlepsza wylosowana bron dla potwora
 
 class Bron(object):
 	przypadek = dict (
