@@ -1,7 +1,15 @@
 from random import randint, sample
 import os
+# klasy lokacji powinny miec swoje przypadki odmian
 # dorobic specjalne soptkanie w lokacjach, skrzynie itp
-
+# kontener nie powinien zawierac zadnych list przedmiotow, powinien tylko zwracac zabranie, oddanie kupno, sprzedaz jesli sa spelnione warunki
+# inny zapis forów (bardziej uproszczony) - jesli lb przedmiotow = 0 inny if
+# kontener ma miec tylko 3 metody wez przedmiot, daj przedmiot bedzie sprawdzac warunki czy jest mozliwy zakup sprzedaz i zwroci wynik czy udala sie operacja
+# generator przedmiotwo z ktorego moglby korzystac sklep
+# przedmioty moga być opakowane w cene przez inna klase
+# klasy lokacje maja zostawiac stringi(zapis np ile razy tu byl gracz)
+# dodatkowo lokacje trzeba zaszyc w silniku mozliwosci powiazan miedzy lokacjami, lokacje maja byc obiektami, a nie klasami
+# mikstura powinna nalezec do klasy przedmiot, z ktorej moze wynikac uzycie
 class Bron(object):
 	przypadek = dict (
 				mianownik = '....',
@@ -422,7 +430,7 @@ class Wioska(object):
 		wybor = raw_input('> ')
 		if wybor == 'tak':
 			gracz.pobranie_broni_z_ekwipunku()
-					
+		return 'spokoj'			
 class Sklep(Kontener):
     def __init__(self):
 		super(Sklep, self).__init__(
@@ -431,6 +439,7 @@ class Sklep(Kontener):
 		)
 		self.nazwa = 'sklep'
 		self.zloto = 100000
+		
     def wejscie(self, klient):
 		print 'chcesz cos kupic[0] czy sprzedac[1]'
 		wybor = raw_input('> ')
@@ -440,6 +449,7 @@ class Sklep(Kontener):
 		elif wybor == '1':
 			print 'wybierz co chcesz sprzedac'
 			self.wymiana(klient, self)
+		return 'spokoj'
 		
 class Trening(object):
 	def __init__(self):
@@ -449,25 +459,26 @@ class Trening(object):
 		wybor = raw_input('> ')
 		if trenujacy.czy_stac(wybor*150):
 			trenujacy.sila = trenujacy.sila + wybor
-						
+		return 'spokoj'
+		
 class Las(object):
 	def __init__(self):
 		self.nazwa = 'las'
 	def wejscie(self, gracz):
 		print 'to jest las'
-
+		return 'walka'
 class Wieza(object):
 	def __init__(self):
 		self.nazwa = 'wieza'
 	def wejscie(self, gracz):
 		print 'to jest wieza'
-			
+		return 'walka'	
 class Rzeka(object):
 	def __init__(self):
 		self.nazwa = 'rzeka'
 	def wejscie(self, gracz):
 		print 'a to rzeka'
-	
+		return 'walka'
 class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
@@ -599,11 +610,11 @@ class Silnik(object):
 		),
 		dict(
 			lokacja = Sklep(),
-			opcja = [Wioska()],
+			opcja = [Wioska(),Trening(), Las()],
 		),
 		dict(
 			lokacja = Trening(),
-			opcja = [Wioska()],
+			opcja = [Wioska(), Wioska(), Las()],
 		),
 		dict(
 			lokacja = Las(),
@@ -655,13 +666,10 @@ class Silnik(object):
 			
 	def gra(self):
 		
-		self.obecnalokacja.wejscie(gracz)
+		wynik = self.obecnalokacja.wejscie(gracz)
 		while self.obecnalokacja != self.mapa[-1]['lokacja']:
 			print gracz.opis(), 'wygrane walki: ', self.wygrane_walki
-			self.obecnalokacja = self.sprawdzenie_dostepnosci_lokacji()
-			if self.obecnalokacja.nazwa == 'wioska' or self.obecnalokacja.nazwa == 'sklep' or self.obecnalokacja.nazwa == 'sala treningowa':
-				self.obecnalokacja.wejscie(gracz)
-			else:	
+			if wynik == 'walka':	
 				generowanie_przeciwnika = GeneratorWrogow()
 				generowanie_przeciwnika.trudnosc(self.wygrane_walki)
 				wrog = generowanie_przeciwnika.losowanie()
@@ -670,7 +678,8 @@ class Silnik(object):
 				if wynik == 'wygrana':
 					self.wygrane_walki +=1
 				self.obecnalokacja.wejscie(gracz)	
-		
+			else:
+				self.obecnalokacja.wejscie(gracz)
 	
 
 gra = Silnik()
