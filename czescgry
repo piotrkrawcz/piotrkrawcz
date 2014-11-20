@@ -1,6 +1,6 @@
 from random import randint, sample
 import os
-# jesli ktos wyjdzie poza liste przy wybozie napisac kod, ktory nie wyrzuci z programu
+# dorobic specjalne soptkanie w lokacjach, skrzynie itp
 
 class Bron(object):
 	przypadek = dict (
@@ -13,7 +13,16 @@ class Bron(object):
 		return self.przypadek[odmiana]
 	def wylicz_obrazenia(self, atakujacy, atakowany):
 		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - self.mnoznik*atakowany.pancerz
-	
+
+class Mikstura(object):
+	przypadek = dict (
+				mianownik = 'mikstura',
+				dopelniacz = 'mikstury',
+				narzednik = 'mikstura',
+				)		
+	def nazwa(self, odmiana):
+		return self.przypadek[odmiana]
+		
 class Miecz(Bron):
 	przypadek = dict (
 		mianownik = 'miecz',
@@ -25,9 +34,13 @@ class Miecz(Bron):
 	mnoznik = 0.5
 	
 class DobryMiecz(Miecz):
+	przypadek = dict (
+		mianownik = 'dobry miecz',
+		dopelniacz = 'dobrego miecza',
+		narzednik = 'dobrym mieczem',
+	)
 	obr_min = 4
 	obr_max = 8
-	mnoznik = 0.5
 	
 class Szczeki(Bron):
 	przypadek = dict(
@@ -50,6 +63,11 @@ class MlotBojowy(Bron):
 	mnoznik = 0.5
 		
 class DobryMlotBojowy(MlotBojowy):
+	przypadek = dict (
+		mianownik = 'dobry mlot',
+		dopelniacz = 'dobrego mlota',
+		narzednik = 'dobrym mlotem',
+	)
 	obr_min = 4
 	mnoznik = 0
 				
@@ -64,6 +82,11 @@ class Topor(Bron):
 	mnoznik = 0.5
 		
 class DobryTopor(Topor):
+	przypadek = dict (
+			mianownik = 'dobry topor',
+			dopelniacz = 'dobrego topora',
+			narzednik = 'dobrym toporem',
+			)
 	obr_min = 1
 	obr_max = 9
 	mnoznik = 0.2
@@ -101,55 +124,47 @@ class Kontener(object):
 		self.przedmioty = [
 			dict(
 				klasa = Palka,
-				towar = 'Palka',
 				cena = 10/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = Kij,
-				towar = 'Kij',
 				cena = 15/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = Miecz,
-				towar = 'Miecz',
 				cena = 50/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = MlotBojowy,
-				towar = 'Mlot Bojowy',
 				cena = 50/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = Topor,
-				towar = 'Topor',
 				cena = 60/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = DobryMiecz,
-				towar = 'Dobry Miecz',
 				cena = 200/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = DobryMlotBojowy,
-				towar = 'Dobry Mlot Bojowy',
 				cena = 200/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				klasa = DobryTopor,
-				towar = 'Dobry Topor',
 				cena = 220/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),
 			dict(
 				
-				towar = 'Mikstura leczenia',
+				klasa = Mikstura,
 				cena = 75/mnoznik_handlarza,
 				ilosc = iloscsztuk,
 			),	
@@ -160,9 +175,9 @@ class Kontener(object):
 				wyswietlaj = 0
 			else:
 				wyswietlaj = 1
-				
-			print ('%d. %s, wartosc: %s, ilosc sztuk: %d' %(nr_przedmiotu, self.przedmioty[nr_przedmiotu]['towar'], self.przedmioty[nr_przedmiotu]['cena'], self.przedmioty[nr_przedmiotu]['ilosc']))*wyswietlaj
-			
+			bron = self.przedmioty[nr_przedmiotu]['klasa']()	
+			print ('%d. %s, wartosc: %s, ilosc sztuk: %d' %(nr_przedmiotu, bron.nazwa('mianownik'), self.przedmioty[nr_przedmiotu]['cena'], self.przedmioty[nr_przedmiotu]['ilosc']))*wyswietlaj
+		print '%d. Koniec' % (nr_przedmiotu + 1)
 	def czy_stac(self, kwota_wydatku):
 		return self.zloto >= kwota_wydatku
 		
@@ -179,16 +194,22 @@ class Kontener(object):
 		self.przedmioty[nr_przedmiotu]['ilosc'] = self.przedmioty[nr_przedmiotu]['ilosc'] - 1
 			
 	def wymiana(self, sprzedajacy, kupujacy):
-		sprzedajacy.prezentacja_towaru()
-		wybor = raw_input('> ')
-		wybor = int(wybor)
-		if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']) and sprzedajacy.przedmioty[wybor]['ilosc']>0:
-			kupujacy.dodaj_przedmiot(wybor)
-			sprzedajacy.zabierz_przedmiot(wybor)
-			kupujacy.wydatki(self.przedmioty[wybor]['cena'])
-			sprzedajacy.zarobki(self.przedmioty[wybor]['cena'])
-		else:
-			print 'niczego nie wybrales'
+		
+		wybor = 0
+		while wybor != len(self.przedmioty):
+			try:
+				sprzedajacy.prezentacja_towaru()
+				wybor = int(raw_input('> '))
+				if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']) and sprzedajacy.przedmioty[wybor]['ilosc']>0:
+					kupujacy.dodaj_przedmiot(wybor)
+					sprzedajacy.zabierz_przedmiot(wybor)
+					kupujacy.wydatki(self.przedmioty[wybor]['cena'])
+					sprzedajacy.zarobki(self.przedmioty[wybor]['cena'])
+					print 'gratuluje udanego zakupu'
+				elif kupujacy.czy_stac(self.przedmioty[wybor]['cena'])== False:
+					print 'nie stac Cie na wybrany przedmiot'
+			except (ValueError, IndexError):
+				print 'wybierz jedna z dostepnych opcji'
 			
 	def ograb(self, ograbiajacy, ograbiany):
 		print 'Lista przedmiotow do ograbienia:'
@@ -226,17 +247,21 @@ class Istota(Kontener):
 		self.bron = bron
 	
 	def pobranie_broni_z_ekwipunku(self):
-		print 'wybierz przedmiot, ktory chcesz zalozyc'
-		self.prezentacja_towaru()
-		wybor = raw_input('> ')
-		wybor = int(wybor)
-		while wybor > (len(self.przedmioty) - 1) or self.przedmioty[wybor]['ilosc'] < 1:
-			print 'powtorz wybor'
-			wybor = raw_input('> ')
-			wybor = int(wybor)
-		self.zmiana_broni(self.przedmioty[wybor]['klasa']())
-		self.zabierz_przedmiot(wybor)
-		
+		wybor = 0
+		while wybor != len(self.przedmioty):
+			try:
+				self.prezentacja_towaru()
+				wybor = int(raw_input('> '))
+				if self.przedmioty[wybor]['ilosc'] > 0:
+					if wybor == (len(self.przedmioty)-1):
+						print 'nie mozesz walczyc mikstura'
+					else:	
+						self.zmiana_broni(self.przedmioty[wybor]['klasa']())
+						self.zabierz_przedmiot(wybor)
+						break
+			except(ValueError, IndexError):
+				print 'wybierz jedna z dostepnych mozliwosci'
+			
 	def opis(self):
 		return '[%s, pz: %d, bron: %s, zloto: %s]' % (self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto)
 		
@@ -282,7 +307,7 @@ class Ork(Potwor):
 		pz = 20 + randint(1,10),
 		bron = Palka(),
 		zloto = 20 + randint(1,30),
-		pancerz = 3,
+		pancerz = 2,
 		)
 		self.losuj_ekwipunek(0,4)
 		
@@ -293,6 +318,7 @@ class PoteznyOrk(Ork):
 		self.bron = Palka()
 		self.pz = 40
 		self.zloto = 40 + randint(1,10)
+		self.losuj_ekwipunek(0,4)
 				
 class Goblin(Potwor):
 	def __init__(self):
@@ -499,7 +525,6 @@ class GeneratorWrogow(object):
 		if wylosowany > len(self.wrogowie) - 1:
 			wylosowany = len(self.wrogowie) - 1
 		klasa_wylooswanego = self.wrogowie[wylosowany]['potwor']
-		self.trudnosc(1)
 		return klasa_wylooswanego() 
 
 class Walka(object):
@@ -613,12 +638,18 @@ class Silnik(object):
 			
 	def sprawdzenie_dostepnosci_lokacji(self):
 		nr_lokacji = self.lista_z_lokacjami.index(self.obecnalokacja.nazwa)
-		print 'wybierz miejsce gdzie chcesz sie przemiescic'
-		for nr_opcji in range(0, len(self.mapa[nr_lokacji]['opcja'])):
-			opcja = self.mapa[nr_lokacji]['opcja'][nr_opcji]
-			print '%d. %s' % (nr_opcji, opcja.nazwa)
-		wybor = int(raw_input('wybierz lokacje > '))
-		return self.mapa[nr_lokacji]['opcja'][wybor]
+		while True:
+			try:
+				print 'wybierz miejsce gdzie chcesz sie przemiescic'
+				for nr_opcji in range(0, len(self.mapa[nr_lokacji]['opcja'])):
+					opcja = self.mapa[nr_lokacji]['opcja'][nr_opcji]
+					print '%d. %s' % (nr_opcji, opcja.nazwa)
+				wybor = int(raw_input('wybierz lokacje > '))
+				return self.mapa[nr_lokacji]['opcja'][wybor]
+				break
+			except (ValueError, IndexError):
+				print 'wybierz jedna z dostepnych opcji'
+		
 			 
 			
 			
@@ -632,6 +663,7 @@ class Silnik(object):
 				self.obecnalokacja.wejscie(gracz)
 			else:	
 				generowanie_przeciwnika = GeneratorWrogow()
+				generowanie_przeciwnika.trudnosc(self.wygrane_walki)
 				wrog = generowanie_przeciwnika.losowanie()
 				walka = Walka(gracz, wrog)
 				wynik = walka.silnik_walki()
@@ -642,5 +674,5 @@ class Silnik(object):
 	
 
 gra = Silnik()
-gra.gra()
 
+gra.gra()
