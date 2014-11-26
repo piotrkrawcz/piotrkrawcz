@@ -1,37 +1,32 @@
 from random import randint, sample
 import os
 
-# klasy lokacji powinny miec swoje przypadki odmian
 # dorobic specjalne soptkanie w lokacjach, skrzynie itp
 # kontener nie powinien zawierac zadnych list przedmiotow, powinien tylko zwracac zabranie, oddanie kupno, sprzedaz jesli sa spelnione warunki
-# inny zapis forów (bardziej uproszczony) - jesli lb przedmiotow = 0 inny if
 # kontener ma miec tylko 3 metody wez przedmiot, daj przedmiot bedzie sprawdzac warunki czy jest mozliwy zakup sprzedaz i zwroci wynik czy udala sie operacja
 # generator przedmiotwo z ktorego moglby korzystac sklep
-# przedmioty moga być opakowane w cene przez inna klase
+# przedmioty moga byc opakowane w cene przez inna klase
 # klasy lokacje maja zostawiac stringi(zapis np ile razy tu byl gracz)
 # dodatkowo lokacje trzeba zaszyc w silniku mozliwosci powiazan miedzy lokacjami, lokacje maja byc obiektami, a nie klasami
 
-class Bron(object):
-	przypadek = dict (
-				mianownik = '....',
-				dopelniacz = '....',
-				narzednik = ' .... ',
-				)
+class Przedmiot(object):
 
 	def nazwa(self, odmiana):
 		return self.przypadek[odmiana]
+		
+class Bron(Przedmiot):
+
 	def wylicz_obrazenia(self, atakujacy, atakowany):
 		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - self.mnoznik*atakowany.pancerz
 
-class Mikstura(object):
+class Mikstura(Przedmiot):
 	przypadek = dict (
 				mianownik = 'mikstura',
 				dopelniacz = 'mikstury',
 				narzednik = 'mikstura',
 				)		
-	def nazwa(self, odmiana):
-		return self.przypadek[odmiana]
-		
+	cena = 75
+	
 class Miecz(Bron):
 	przypadek = dict (
 		mianownik = 'miecz',
@@ -41,6 +36,16 @@ class Miecz(Bron):
 	obr_min = 2
 	obr_max = 6
 	mnoznik = 0.5
+	cena = 50
+
+class TepyMiecz(Miecz):
+	przypadek = dict (
+		mianownik = 'tepy miecz',
+		dopelniacz = 'tepego miecza',
+		narzednik = 'tepym mieczem',
+	)
+	mnoznik = 1
+	cena = 30
 	
 class DobryMiecz(Miecz):
 	przypadek = dict (
@@ -50,6 +55,7 @@ class DobryMiecz(Miecz):
 	)
 	obr_min = 4
 	obr_max = 8
+	cena = 200
 	
 class Szczeki(Bron):
 	przypadek = dict(
@@ -70,7 +76,19 @@ class MlotBojowy(Bron):
 	obr_min = 3
 	obr_max = 5
 	mnoznik = 0.5
-		
+	cena = 50
+
+class LekkiMlot(MlotBojowy):
+	przypadek = dict (
+		mianownik = 'lekki mlot',
+		dopelniacz = 'lekkiego mlota',
+		narzednik = 'lekkim mlotem',
+	)
+	obr_min = 3
+	obr_max = 5
+	mnoznik = 1
+	cena = 50
+	
 class DobryMlotBojowy(MlotBojowy):
 	przypadek = dict (
 		mianownik = 'dobry mlot',
@@ -79,7 +97,8 @@ class DobryMlotBojowy(MlotBojowy):
 	)
 	obr_min = 4
 	mnoznik = 0
-				
+	cena = 200
+	
 class Topor(Bron):
 	przypadek = dict (
 			mianownik = 'topor',
@@ -89,7 +108,19 @@ class Topor(Bron):
 	obr_min = 1
 	obr_max = 7
 	mnoznik = 0.5
-		
+	cena = 60
+	
+class LekkiTopor(Topor):
+	przypadek = dict (
+			mianownik = 'lekki topor',
+			dopelniacz = 'lekkiego topora',
+			narzednik = 'lekkim toporem',
+			)
+	obr_min = 1
+	obr_max = 5
+	mnoznik = 0.5
+	cena = 40
+	
 class DobryTopor(Topor):
 	przypadek = dict (
 			mianownik = 'dobry topor',
@@ -99,6 +130,7 @@ class DobryTopor(Topor):
 	obr_min = 1
 	obr_max = 9
 	mnoznik = 0.2
+	cena = 220
 	
 class Palka(Bron):
 	przypadek = dict (
@@ -109,7 +141,8 @@ class Palka(Bron):
 	obr_min = 1
 	obr_max = 4
 	mnoznik = 1.5
-
+	cena = 10
+	
 class Kij(Palka):
 	przypadek = dict (
 		mianownik = 'kij',
@@ -117,7 +150,8 @@ class Kij(Palka):
 		narzednik = 'kijem',
 		)
 	obr_min = 2
-
+	cena = 15
+	
 class Pazury(Bron):
 	przypadek = dict(
 			mianownik = 'pazury',
@@ -128,114 +162,47 @@ class Pazury(Bron):
 	obr_max = 25
 	mnoznik = 1	
 
+class GeneratorPrzedmiotow(object):
+	dostepne_przedmioty =[
+		Mikstura(),
+		Palka(),
+		Kij(),
+		TepyMiecz(),
+		LekkiMlot(),
+		LekkiTopor(),
+		Miecz(),
+		MlotBojowy(),
+		Topor(),
+		DobryMiecz(),
+		DobryMlotBojowy(),
+		DobryTopor(),
+		
+	]
+	
+	def losuj_przedmioty(self, wlasciciel, poziom):
+		for index, przedmiot in dostepne_przedmioty:
+			wlasciciel.ekwipunek.append(przedmiot) 
+	
+	
+	
+		
 class Kontener(object):
-	def __init__(self, iloscsztuk, mnoznik_handlarza):
-		self.przedmioty = [
-			dict(
-				klasa = Palka,
-				cena = 10/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = Kij,
-				cena = 15/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = Miecz,
-				cena = 50/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = MlotBojowy,
-				cena = 50/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = Topor,
-				cena = 60/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = DobryMiecz,
-				cena = 200/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = DobryMlotBojowy,
-				cena = 200/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				klasa = DobryTopor,
-				cena = 220/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),
-			dict(
-				
-				klasa = Mikstura,
-				cena = 75/mnoznik_handlarza,
-				ilosc = iloscsztuk,
-			),	
-		]
-	def prezentacja_towaru(self):
-		for nr_przedmiotu in range(0, len(self.przedmioty)):
-			if self.przedmioty[nr_przedmiotu]['ilosc'] == 0:
-				wyswietlaj = 0
-			else:
-				wyswietlaj = 1
-			bron = self.przedmioty[nr_przedmiotu]['klasa']()	
-			print ('%d. %s, wartosc: %s, ilosc sztuk: %d' %(nr_przedmiotu, bron.nazwa('mianownik'), self.przedmioty[nr_przedmiotu]['cena'], self.przedmioty[nr_przedmiotu]['ilosc']))*wyswietlaj
-		print '%d. Koniec' % (nr_przedmiotu + 1)
-	def czy_stac(self, kwota_wydatku):
-		return self.zloto >= kwota_wydatku
+	def prezentacja_przedmiotow(self, wlasciciel):
+		wydruk = ''
+		for index, przedmiot in enumerate(wlasciciel.ekwipunek):
+			przedmiot = przedmiot()
+			wydruk = wydruk + '%d. %s cena: %d\n' % (index, przedmiot.nazwa('mianownik'), przedmiot.cena)	
+		return wydruk
 		
-	def zarobki(self, dodaj_zloto):
-		self.zloto = self.zloto + dodaj_zloto
+	def dodaj_przedmiot(self, beneficjent, przedmiot):
+		beneficjent.ekwipunek.append(przedmiot)
 		
-	def wydatki(self, odejmij_zloto):
-		self.zloto = self.zloto - odejmij_zloto
-		
-	def dodaj_przedmiot(self, nr_przedmiotu):
-		self.przedmioty[nr_przedmiotu]['ilosc'] = self.przedmioty[nr_przedmiotu]['ilosc'] + 1
-			
-	def zabierz_przedmiot(self, nr_przedmiotu):
-		self.przedmioty[nr_przedmiotu]['ilosc'] = self.przedmioty[nr_przedmiotu]['ilosc'] - 1
-			
-	def wymiana(self, sprzedajacy, kupujacy):
-		
-		wybor = 0
-		while wybor != len(self.przedmioty):
-			try:
-				sprzedajacy.prezentacja_towaru()
-				wybor = int(raw_input('> '))
-				if wybor in range(0, len(self.przedmioty)) and kupujacy.czy_stac(self.przedmioty[wybor]['cena']) and sprzedajacy.przedmioty[wybor]['ilosc']>0:
-					kupujacy.dodaj_przedmiot(wybor)
-					sprzedajacy.zabierz_przedmiot(wybor)
-					kupujacy.wydatki(self.przedmioty[wybor]['cena'])
-					sprzedajacy.zarobki(self.przedmioty[wybor]['cena'])
-					print 'gratuluje udanego zakupu'
-				elif kupujacy.czy_stac(self.przedmioty[wybor]['cena'])== False:
-					print 'nie stac Cie na wybrany przedmiot'
-			except (ValueError, IndexError):
-				print 'wybierz jedna z dostepnych opcji'
-			
-	def ograb(self, ograbiajacy, ograbiany):
-		print 'Lista przedmiotow do ograbienia:'
-		ograbiany.prezentacja_towaru()
-		for nr_przedmiotu in range(0, len(ograbiany.przedmioty)):
-			if ograbiany.przedmioty[nr_przedmiotu]['ilosc'] > 0:
-				ograbiajacy.dodaj_przedmiot(nr_przedmiotu)
+	def odejmij_przedmiot(self, wlasciciel, przedmiot):
+		wlasciciel.ekwipunek.remove(przedmiot)
 	
-class Istota(Kontener):
-	
-	
+class Istota(object):
+	ekwipunek = []
 	def __init__(self, nazwa, sila, pz, bron, zloto, pancerz):
-		super(Istota, self).__init__(
-		iloscsztuk = 0,
-		mnoznik_handlarza = 4,
-		)
-		
 		self.nazwa = nazwa
 		self.sila = sila
 		self.pz = pz
@@ -255,33 +222,18 @@ class Istota(Kontener):
 	def zmiana_broni(self, bron):	
 		self.bron = bron
 	
-	def pobranie_broni_z_ekwipunku(self):
-		wybor = 0
-		while wybor != len(self.przedmioty):
-			try:
-				self.prezentacja_towaru()
-				wybor = int(raw_input('> '))
-				if self.przedmioty[wybor]['ilosc'] > 0:
-					if wybor == (len(self.przedmioty)-1):
-						print 'nie mozesz walczyc mikstura'
-					else:	
-						self.zmiana_broni(self.przedmioty[wybor]['klasa']())
-						self.zabierz_przedmiot(wybor)
-						break
-			except(ValueError, IndexError):
-				print 'wybierz jedna z dostepnych mozliwosci'
-			
 	def opis(self):
 		return '[%s, pz: %d, bron: %s, zloto: %s]' % (self.nazwa, self.pz, self.bron.nazwa('mianownik'), self.zloto)
-		
-	def uzycie_mikstury(self):
-		if self.przedmioty[-1]['ilosc'] > 0:
-			self.przedmioty[-1]['ilosc'] = self.przedmioty[-1]['ilosc']- 1
-			self.dodaj_pz(10)
-			print 'wypiles miksture leczenia, Twoje pz zwiekszyly sie o 10, masz ich aktualnie %d, liczba poozstalych mikstur: %d' % (self.pz, self.przedmioty[-1]['ilosc'])
-		else:
-			print 'brak mikstury leczenia'
 			
+	def czy_stac(self, kwota_wydatku):
+		return self.zloto >= kwota_wydatku
+		
+	def zarobki(self, dodaj_zloto):
+		self.zloto = self.zloto + dodaj_zloto
+		
+	def wydatki(self, odejmij_zloto):
+		self.zloto = self.zloto - odejmij_zloto
+						
 class Postac(Istota):
 	def __init__(self, imie):
 		super(Postac, self).__init__(
@@ -296,18 +248,8 @@ class Postac(Istota):
 gracz = Postac('Rysiu')	
 
 class Potwor(Istota):
-	def losuj_ekwipunek(self, ekw1, ekw2):
-		losuj = randint(ekw1, ekw2)
-		self.zmiana_broni(self.przedmioty[losuj]['klasa']())
-		self.dodaj_przedmiot(losuj)
-		
-class Legowisko():
-	def __init__(self):
-		self.nazwa = 'Legowisko Smoka'
-	def wejscie(self):
-		os.system('clear')
-		print 'opis legowiska'
-			
+	pass
+				
 class Ork(Potwor):
 	def __init__(self):
 		super(Ork, self).__init__(
@@ -318,7 +260,6 @@ class Ork(Potwor):
 		zloto = 20 + randint(1,30),
 		pancerz = 2,
 		)
-		self.losuj_ekwipunek(0,4)
 		
 class PoteznyOrk(Ork):
 	def __init__(self):
@@ -327,8 +268,7 @@ class PoteznyOrk(Ork):
 		self.bron = Palka()
 		self.pz = 40
 		self.zloto = 40 + randint(1,10)
-		self.losuj_ekwipunek(0,4)
-				
+						
 class Goblin(Potwor):
 	def __init__(self):
 		super(Goblin, self).__init__(
@@ -339,7 +279,6 @@ class Goblin(Potwor):
 		zloto = 10 + randint(1,10),
 		pancerz = 0
 		)
-		self.losuj_ekwipunek(0,1)
 			
 class PoteznyGoblin(Goblin):
 	def __init__(self):
@@ -378,8 +317,7 @@ class Ogr(Potwor):
 		zloto = 40 + randint(1,30),
 		pancerz = 3
 		)
-		self.losuj_ekwipunek(2,7)
-
+		
 class CzarnyRycerz(Potwor):
 	def __init__(self):
 		super(CzarnyRycerz, self).__init__(
@@ -390,8 +328,7 @@ class CzarnyRycerz(Potwor):
 		zloto = 40 + randint(1,30),
 		pancerz = 4
 		)
-		self.losuj_ekwipunek(2,7)		
-		
+				
 class WielkiPajak(Potwor):
 	def __init__(self):
 		
@@ -414,74 +351,54 @@ class Smok(Potwor):
 			zloto = 10,
 			pancerz = 10,
 			)
-		
-class Sekretnamisja(object):
-	
-	def __init__(self):
-		self.nazwa = 'Serkretna'
-	def wejscie(self):
-		pass
 
-class Wioska(object):
+class Lokacja(object):
 	def __init__(self):
-		self.nazwa = 'wioska'
-	def wejscie(self, gracz):
-		print 'opis wioski'
-		print 'czy chcesz zmienic swoj ekwipunek [tak/nie] ?'
-		wybor = raw_input('> ')
-		if wybor == 'tak':
-			gracz.pobranie_broni_z_ekwipunku()
-		return 'spokoj'			
-class Sklep(Kontener):
-    def __init__(self):
-		super(Sklep, self).__init__(
-			iloscsztuk = 5,
-			mnoznik_handlarza = 1,	
-		)
-		self.nazwa = 'sklep'
-		self.zloto = 100000
+		self.przypadek = dict(
+				mianownik = self.przypadki[0],
+				dopelniacz = self.przypadki[1],
+				narzednik = self.przypadki[2],
+			
+			)
+		self.licznik_wizyt = 1
 		
-    def wejscie(self, klient):
-		print 'chcesz cos kupic[0] czy sprzedac[1]'
-		wybor = raw_input('> ')
-		if wybor == '0':
-			print 'wybierz co chcesz kupic'
-			self.wymiana(self, klient)
-		elif wybor == '1':
-			print 'wybierz co chcesz sprzedac'
-			self.wymiana(klient, self)
-		return 'spokoj'
+	def opis_ogolny(self):
+		return '%s, wizyta nr: %d \n %s' % (self.nazwa('mianownik'), self.licznik_wizyt, self.opis_lokacji)
 		
-class Trening(object):
-	def __init__(self):
-		self.nazwa = 'sala treningowa'	
-	def wejscie(self, trenujacy):
-		print u'o ile chcesz zwiekszyc sile? [1pkt sily za 150 zlota]'
-		wybor = raw_input('> ')
-		if trenujacy.czy_stac(wybor*150):
-			trenujacy.sila = trenujacy.sila + wybor
-		return 'spokoj'
+	def nazwa(self, odmiana):
+		return self.przypadek[odmiana]
 		
-class Las(object):
-	def __init__(self):
-		self.nazwa = 'las'
-	def wejscie(self, gracz):
-		print 'to jest las'
-		return 'walka'
+	def wejscie(self, wizytator):
+		self.licznik_wizyt += 1
+			
+class Wioska(Lokacja):
+	przypadki = ['wioska','wioski','wioska']
+	opis_lokacji = 'jestes w wiosce'
+	
+class Sklep(Lokacja):
+	przypadki = ['sklep', 'sklepu', 'sklepem']
+	opis_lokacji = 'jestes w sklepie'
 		
-class Wieza(object):
-	def __init__(self):
-		self.nazwa = 'wieza'
-	def wejscie(self, gracz):
-		print 'to jest wieza'
-		return 'walka'	
+class Trening(Lokacja):
+	przypadki = ['sala treningowa', 'sali treningowej', 'sala treningowa']
+	opis_lokacji = 'jestes w treningu'
 		
-class Rzeka(object):
-	def __init__(self):
-		self.nazwa = 'rzeka'
-	def wejscie(self, gracz):
-		print 'a to rzeka'
-		return 'walka'
+class Las(Lokacja):
+	przypadki = ['las', 'lasu', 'lasem']
+	opis_lokacji = 'jestes w lesie'
+		
+class Wieza(Lokacja):
+	przypadki = ['wieza', 'wiezy', 'wieza']
+	opis_lokacji = 'jestes w wiezy'
+	
+class Rzeka(Lokacja):
+	przypadki = ['rzeka', 'rzeki', 'rzeka']
+	opis_lokacji = 'jestes w rzece'
+
+class Legowisko(Lokacja):
+	przypadki = ['legowisko smoka', 'legowiska smoka', 'legowiskiem smoka',]
+	opis_lokacji = 'legowisko smocze jest ...'
+		
 class GeneratorWrogow(object):
 	wrogowie = [
 				dict(
@@ -528,10 +445,6 @@ class GeneratorWrogow(object):
 		self.szansa = []
 		for index, potwor in enumerate(self.wrogowie):
 			self.szansa.extend([index] * potwor['szansa'])
-		self.poziom = 0
-		
-	def trudnosc(self, ile):
-		self.poziom = self.poziom + ile
 		
 	def losowanie(self):
 		wylosowany = sample(self.szansa, 1)[0]
@@ -603,88 +516,69 @@ class Walka(object):
 		else:
 			print 'umarles'
 			exit(1)	
-		
-class Silnik(object):
-	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
-	mapa = [
-		dict(
-			lokacja = Wioska(),
-			opcja = [Sklep(), Trening(), Las()]
-		),
-		dict(
-			lokacja = Sklep(),
-			opcja = [Wioska(),Trening(), Las()],
-		),
-		dict(
-			lokacja = Trening(),
-			opcja = [Wioska(), Wioska(), Las()],
-		),
-		dict(
-			lokacja = Las(),
-			opcja = [Wioska(), Rzeka()],
-		),
-		dict(
-			lokacja = Rzeka(),
-			opcja = [Las(),Wieza(),Wioska()],
-		),
-		dict(
-			lokacja = Sekretnamisja(),
-			opcja = [Las()],
-		),
-		dict(
-			lokacja = Wieza(),
-			opcja = [Las(),Wieza()],
-		),
-		dict(
-			lokacja = Legowisko(),
-		
-		),
-	
+
+class GeneratorLokacji(object):
+	lokacje = [
+		Wioska(),
+		Sklep(),
+		Trening(),
+		Las(),
+		Rzeka(),
+		Wieza(),
+		Legowisko(),
 	]	
 		
+	przejscia = {
+		0: [1,2,3],
+		1: [0,],
+		2: [0,],
+		3: [0,4],
+		4: [0,3,5],
+		5: [4,6],
+		6: [],
+		
+	}
+	
+	def prezentacja_lokacji(self, nr_lokacji):
+		for opcja in self.przejscia[nr_lokacji]:
+			print opcja, self.lokacje[opcja].nazwa('mianownik')
+			
+	def pobierz_lokacje(self, nr_lokacji):
+		return self.lokacje[nr_lokacji]
+		
+class Silnik(object):
+	
+		
+	
 	def __init__(self):
-		self.wygrane_walki = 0
-		self.obecnalokacja = self.mapa[0]['lokacja']
-		self.lista_z_lokacjami = []
-		for index in range(0, len(self.mapa)):
-			lokacja = self.mapa[index]['lokacja']
-			self.lista_z_lokacjami.append(lokacja.nazwa)
-			
-	def sprawdzenie_dostepnosci_lokacji(self):
-		nr_lokacji = self.lista_z_lokacjami.index(self.obecnalokacja.nazwa)
-		while True:
-			try:
-				print 'wybierz miejsce gdzie chcesz sie przemiescic'
-				for nr_opcji in range(0, len(self.mapa[nr_lokacji]['opcja'])):
-					opcja = self.mapa[nr_lokacji]['opcja'][nr_opcji]
-					print '%d. %s' % (nr_opcji, opcja.nazwa)
-				wybor = int(raw_input('wybierz lokacje > '))
-				return self.mapa[nr_lokacji]['opcja'][wybor]
-				break
-			except (ValueError, IndexError):
-				print 'wybierz jedna z dostepnych opcji'
+		self.poziom = 0
+
+	def poziom_trudnosci(self, ile):
+		self.poziom = self.poziom + ile
 		
-			 
-			
-			
 	def gra(self):
-		
-		wynik = self.obecnalokacja.wejscie(gracz)
-		while self.obecnalokacja != self.mapa[-1]['lokacja']:
-			print gracz.opis(), 'wygrane walki: ', self.wygrane_walki
-			if wynik == 'walka':	
-				generowanie_przeciwnika = GeneratorWrogow()
-				generowanie_przeciwnika.trudnosc(self.wygrane_walki)
-				wrog = generowanie_przeciwnika.losowanie()
-				walka = Walka(gracz, wrog)
-				wynik = walka.silnik_walki()
-				if wynik == 'wygrana':
-					self.wygrane_walki +=1
-				self.obecnalokacja.wejscie(gracz)	
-			else:
-				self.obecnalokacja.wejscie(gracz)
+		nr_lokacji = 0
+		generator_lokacji = GeneratorLokacji()
+		obecnalokacja = generator_lokacji.pobierz_lokacje(nr_lokacji)
+		print obecnalokacja.opis_ogolny()
+		while obecnalokacja != generator_lokacji.lokacje[-1]:
+			obecnalokacja.wejscie(gracz)
+			while True:
+				generator_lokacji.prezentacja_lokacji(nr_lokacji)
+				wybor = int(raw_input('> '))
+				if wybor in generator_lokacji.przejscia[nr_lokacji]:
+					nr_lokacji = wybor
+					break
+				else:
+					print 'wybierz jedna z dostepnych opcji'
+			obecnalokacja = generator_lokacji.pobierz_lokacje(nr_lokacji)
+			print obecnalokacja.opis_ogolny()
 	
 
-gra = Silnik()
-
-gra.gra()
+kontener = Kontener()
+kontener.dodaj_przedmiot(gracz, Palka)
+kontener.dodaj_przedmiot(gracz, Miecz)
+kontener.dodaj_przedmiot(gracz, Mikstura)
+print kontener.prezentacja_przedmiotow(gracz)
+kontener.odejmij_przedmiot(gracz, Miecz)
+print kontener.prezentacja_przedmiotow(gracz)
