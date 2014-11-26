@@ -23,34 +23,6 @@ class Wioska(Lokacja):
 	przypadki = ['wioska','wioski','wioska']
 	nr_lokacji = 0
 
-class Sklep(Lokacja):
-	przypadki = ['sklep', 'sklepu', 'sklepem']
-	nr_lokacji = 1
-	
-		
-class Trening(Lokacja):
-	przypadki = ['sala treningowa', 'sali treningowej', 'sala treningowa']
-	nr_lokacji = 2
-	
-		
-class Las(Lokacja):
-	przypadki = ['las', 'lasu', 'lasem']
-	nr_lokacji = 3
-	
-		
-class Wieza(Lokacja):
-	przypadki = ['wieza', 'wiezy', 'wieza']
-	nr_lokacji = 5
-	
-class Rzeka(Lokacja):
-	przypadki = ['rzeka', 'rzeki', 'rzeka']
-	nr_lokacji = 4
-	
-
-class Legowisko(Lokacja):
-	przypadki = ['legowisko smoka', 'legowiska smoka', 'legowiskiem smoka',]
-	nr_lokacji = 6
-
 class Silnik(object):
 	# ladna nazwa lokacji powinna wynikac z metody klasy do ktorej sie odwolujemy
 	lokacje = [
