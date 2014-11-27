@@ -1,13 +1,11 @@
 from random import randint, sample
-import os
+import random, os
+
 
 # dorobic specjalne soptkanie w lokacjach, skrzynie itp
-# kontener nie powinien zawierac zadnych list przedmiotow, powinien tylko zwracac zabranie, oddanie kupno, sprzedaz jesli sa spelnione warunki
-# kontener ma miec tylko 3 metody wez przedmiot, daj przedmiot bedzie sprawdzac warunki czy jest mozliwy zakup sprzedaz i zwroci wynik czy udala sie operacja
-# generator przedmiotwo z ktorego moglby korzystac sklep
+# generator przedmiotow z ktorego moglby korzystac sklep
 # przedmioty moga byc opakowane w cene przez inna klase
 # klasy lokacje maja zostawiac stringi(zapis np ile razy tu byl gracz)
-# dodatkowo lokacje trzeba zaszyc w silniku mozliwosci powiazan miedzy lokacjami, lokacje maja byc obiektami, a nie klasami
 
 class Przedmiot(object):
 
@@ -15,7 +13,7 @@ class Przedmiot(object):
 		return self.przypadek[odmiana]
 		
 class Bron(Przedmiot):
-
+	typ = 'bron'
 	def wylicz_obrazenia(self, atakujacy, atakowany):
 		return (atakujacy.sila + randint(self.obr_min, self.obr_max)) - self.mnoznik*atakowany.pancerz
 
@@ -24,7 +22,8 @@ class Mikstura(Przedmiot):
 				mianownik = 'mikstura',
 				dopelniacz = 'mikstury',
 				narzednik = 'mikstura',
-				)		
+				)
+	typ = 'mikstura'				
 	cena = 75
 	
 class Miecz(Bron):
@@ -179,19 +178,23 @@ class GeneratorPrzedmiotow(object):
 		
 	]
 	
-	def losuj_przedmioty(self, wlasciciel, poziom):
-		for index, przedmiot in dostepne_przedmioty:
+	def losuj_przedmioty(self, wlasciciel, poziom, lb_przedmiotow):
+		if poziom > (len(self.dostepne_przedmioty) - 1):
+			poziom = len(self.dostepne_przedmioty) - 1
+		dostepne_przedm = []
+		for index in range(0, poziom):
+			dostepne_przedm.append(self.dostepne_przedmioty[index])
+		for index in range(0, lb_przedmiotow):
+			przedmiot = sample(dostepne_przedm, 1)[0]
 			wlasciciel.ekwipunek.append(przedmiot) 
-	
-	
-	
+
+generator_przedmiotow = GeneratorPrzedmiotow()			
 		
 class Kontener(object):
-	def prezentacja_przedmiotow(self, wlasciciel):
-		wydruk = ''
+	def prezentacja_przedmiotow(self, wlasciciel, modyfikator_ceny):
+		wydruk = '%s\n' % wlasciciel.nazwa
 		for index, przedmiot in enumerate(wlasciciel.ekwipunek):
-			przedmiot = przedmiot()
-			wydruk = wydruk + '%d. %s cena: %d\n' % (index, przedmiot.nazwa('mianownik'), przedmiot.cena)	
+			wydruk = wydruk + '%d. %s cena: %d\n' % (index, przedmiot.nazwa('mianownik'), przedmiot.cena/modyfikator_ceny)	
 		return wydruk
 		
 	def dodaj_przedmiot(self, beneficjent, przedmiot):
@@ -199,9 +202,11 @@ class Kontener(object):
 		
 	def odejmij_przedmiot(self, wlasciciel, przedmiot):
 		wlasciciel.ekwipunek.remove(przedmiot)
-	
+
+kontener = Kontener()		
+		
 class Istota(object):
-	ekwipunek = []
+	
 	def __init__(self, nazwa, sila, pz, bron, zloto, pancerz):
 		self.nazwa = nazwa
 		self.sila = sila
@@ -209,6 +214,7 @@ class Istota(object):
 		self.bron = bron
 		self.zloto = zloto
 		self.pancerz = pancerz
+		self.ekwipunek = []
 		
 	def dodaj_pz(self, zmiana_pz):
 		self.pz = self.pz + zmiana_pz
@@ -246,6 +252,7 @@ class Postac(Istota):
 			)
 
 gracz = Postac('Rysiu')	
+sprzedawca = Postac('Zenek - Sprzedawca')
 
 class Potwor(Istota):
 	pass
@@ -548,37 +555,67 @@ class GeneratorLokacji(object):
 		
 class Silnik(object):
 	
+	def __init__(self, poziom):
+		self.poziom = poziom
+		self.generator_lokacji = GeneratorLokacji()
 		
-	
-	def __init__(self):
-		self.poziom = 0
-
 	def poziom_trudnosci(self, ile):
 		self.poziom = self.poziom + ile
 		
+	def wymiana(self, kupujacy, sprzedajacy, modyfikator_ceny):
+		while True:
+			print kontener.prezentacja_przedmiotow(sprzedajacy, modyfikator_ceny)
+			print '%s, zloto: %d' %(gracz.nazwa, gracz.zloto)
+			while True:
+				try:
+					wybor = int(raw_input('wybierz przedmiot:> '))
+					break
+				except ValueError:
+					return 0
+			if wybor in range(0, len(sprzedajacy.ekwipunek)):
+				if kupujacy.czy_stac(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny):
+					print ' gratulacje %s stal sie wlascicielem nowego slicznego %s' % (kupujacy.nazwa, sprzedajacy.ekwipunek[wybor].nazwa('dopelniacz'))
+					kontener.dodaj_przedmiot(kupujacy, sprzedajacy.ekwipunek[wybor])
+					kupujacy.wydatki(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny)
+					sprzedajacy.zarobki(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny)
+					kontener.odejmij_przedmiot(sprzedajacy, sprzedajacy.ekwipunek[wybor])
+					
+
+					break
+				else:
+					print 'nie stac cie na wybrany przedmiot'
+					break
+			else:
+				print 'wybierz przedmiot z listy'
+				
 	def gra(self):
 		nr_lokacji = 0
-		generator_lokacji = GeneratorLokacji()
-		obecnalokacja = generator_lokacji.pobierz_lokacje(nr_lokacji)
-		print obecnalokacja.opis_ogolny()
-		while obecnalokacja != generator_lokacji.lokacje[-1]:
+		
+		obecnalokacja = self.generator_lokacji.pobierz_lokacje(nr_lokacji)
+		while obecnalokacja != self.generator_lokacji.lokacje[-1]:
+			print obecnalokacja.opis_ogolny()
 			obecnalokacja.wejscie(gracz)
 			while True:
-				generator_lokacji.prezentacja_lokacji(nr_lokacji)
+				self.generator_lokacji.prezentacja_lokacji(nr_lokacji)
 				wybor = int(raw_input('> '))
-				if wybor in generator_lokacji.przejscia[nr_lokacji]:
+				if wybor in self.generator_lokacji.przejscia[nr_lokacji]:
 					nr_lokacji = wybor
 					break
 				else:
 					print 'wybierz jedna z dostepnych opcji'
-			obecnalokacja = generator_lokacji.pobierz_lokacje(nr_lokacji)
-			print obecnalokacja.opis_ogolny()
-	
+			obecnalokacja = self.generator_lokacji.pobierz_lokacje(nr_lokacji)
+			if obecnalokacja.nazwa('mianownik') == 'sklep':
+				print ''
+			
 
-kontener = Kontener()
-kontener.dodaj_przedmiot(gracz, Palka)
-kontener.dodaj_przedmiot(gracz, Miecz)
-kontener.dodaj_przedmiot(gracz, Mikstura)
-print kontener.prezentacja_przedmiotow(gracz)
-kontener.odejmij_przedmiot(gracz, Miecz)
-print kontener.prezentacja_przedmiotow(gracz)
+gra = Silnik(1)
+gracz.zarobki(1000)
+
+generator_przedmiotow.losuj_przedmioty(gracz,1,1)
+generator_przedmiotow.losuj_przedmioty(sprzedawca,15,20)
+
+print kontener.prezentacja_przedmiotow(sprzedawca, 1)
+print kontener.prezentacja_przedmiotow(gracz, 4)
+while True:
+	gra.wymiana(gracz, sprzedawca, 1)
+	print kontener.prezentacja_przedmiotow(gracz, 4)
