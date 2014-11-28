@@ -1,12 +1,11 @@
 from random import randint, sample
 import random, os
 
-
-# dorobic specjalne soptkanie w lokacjach, skrzynie itp
-# generator przedmiotow z ktorego moglby korzystac sklep
+# kontener ma zwrocic liste [] 'rzeczy' do zrobienia czegos z tym, 
+# kontener ma miec funkcje do zabrania czegos do niego albo dodania do niego (sila, ekwipunek)
 # przedmioty moga byc opakowane w cene przez inna klase
-# klasy lokacje maja zostawiac stringi(zapis np ile razy tu byl gracz)
-
+# funkcja sklepu ma sprawdzac czy mozna dokonac 'transakcji'
+poziom = 1
 class Przedmiot(object):
 
 	def nazwa(self, odmiana):
@@ -178,32 +177,31 @@ class GeneratorPrzedmiotow(object):
 		
 	]
 	
-	def losuj_przedmioty(self, wlasciciel, poziom, lb_przedmiotow):
+	def losuj_przedmioty(self, poziom, lb_przedmiotow):
 		if poziom > (len(self.dostepne_przedmioty) - 1):
 			poziom = len(self.dostepne_przedmioty) - 1
-		dostepne_przedm = []
+		dostepne_przedmioty =[]	
+		lista = []
 		for index in range(0, poziom):
-			dostepne_przedm.append(self.dostepne_przedmioty[index])
+			dostepne_przedmioty.append(self.dostepne_przedmioty[index])
 		for index in range(0, lb_przedmiotow):
-			przedmiot = sample(dostepne_przedm, 1)[0]
-			wlasciciel.ekwipunek.append(przedmiot) 
-
-generator_przedmiotow = GeneratorPrzedmiotow()			
+			przedmiot = sample(dostepne_przedmioty, 1)[0]
+			lista.append(przedmiot) 
+		return lista
+			
 		
 class Kontener(object):
-	def prezentacja_przedmiotow(self, wlasciciel, modyfikator_ceny):
-		wydruk = '%s\n' % wlasciciel.nazwa
-		for index, przedmiot in enumerate(wlasciciel.ekwipunek):
-			wydruk = wydruk + '%d. %s cena: %d\n' % (index, przedmiot.nazwa('mianownik'), przedmiot.cena/modyfikator_ceny)	
-		return wydruk
-		
-	def dodaj_przedmiot(self, beneficjent, przedmiot):
-		beneficjent.ekwipunek.append(przedmiot)
-		
-	def odejmij_przedmiot(self, wlasciciel, przedmiot):
-		wlasciciel.ekwipunek.remove(przedmiot)
 
-kontener = Kontener()		
+	def lista_obiektow(self):
+		pass
+		
+	def dodaj_obiekt(self):
+		pass
+		
+	def odejmij_obiekt(self):
+		pass
+		
+	
 		
 class Istota(object):
 	
@@ -382,11 +380,28 @@ class Wioska(Lokacja):
 	przypadki = ['wioska','wioski','wioska']
 	opis_lokacji = 'jestes w wiosce'
 	
-class Sklep(Lokacja):
+class Sklep(Lokacja, Kontener):
+	
 	przypadki = ['sklep', 'sklepu', 'sklepem']
 	opis_lokacji = 'jestes w sklepie'
+	def __init__(self):
+		self.generator_przedmiotow = GeneratorPrzedmiotow()
+		self.oferta = self.generator_przedmiotow.losuj_przedmioty(poziom,15)
+		super(Sklep, self).__init__()
 		
-class Trening(Lokacja):
+	def lista_obiektow(self, modyfikator_ceny):
+		return self.oferta
+		
+	def dodaj_obiekt(self, obiekt):
+		self.oferta.append(obiekt)
+		
+	def odejmij_obiekt(self, beneficjent, nr_przedmiotu):
+		if beneficjent.czystac(self.oferta[nr_przedmiotu].cena):
+			beneficjent.ekwipunek.append(self.oferta[nr_przedmiotu])
+			self.oferta.remove[nr_przedmiotu]
+		return 'zakup wykonany sukcesem'
+		
+class Trening(Lokacja, Kontener):
 	przypadki = ['sala treningowa', 'sali treningowej', 'sala treningowa']
 	opis_lokacji = 'jestes w treningu'
 		
@@ -547,53 +562,25 @@ class GeneratorLokacji(object):
 	}
 	
 	def prezentacja_lokacji(self, nr_lokacji):
-		for opcja in self.przejscia[nr_lokacji]:
-			print opcja, self.lokacje[opcja].nazwa('mianownik')
+		wydruk = ''
+		for index, nazwa in enumerate(self.przejscia[nr_lokacji]):
+			wydruk += '%d. %s\n' % (index, self.lokacje[self.przejscia[nr_lokacji][index]].nazwa('mianownik'))
+		return wydruk
 			
 	def pobierz_lokacje(self, nr_lokacji):
 		return self.lokacje[nr_lokacji]
 		
 class Silnik(object):
 	
-	def __init__(self, poziom):
-		self.poziom = poziom
+	def __init__(self):
 		self.generator_lokacji = GeneratorLokacji()
 		self.sprzedawca = Postac('Sprzedawca')
-	def poziom_trudnosci(self, ile):
-		self.poziom = self.poziom + ile
-		
-	def wymiana(self, kupujacy, sprzedajacy, modyfikator_ceny):
-		print 'chcesz cos kupic czy sprzedac?[kup/sprzedaj]'
-		wybor = raw_input('> ')
-		if 'spr' in wybor:
-			kupujacy, sprzedajacy = sprzedajacy, kupujacy
-			modyfikator_ceny = 3
-		while True:
-			print kontener.prezentacja_przedmiotow(sprzedajacy, modyfikator_ceny)
-			print '%s, zloto: %d' %(gracz.nazwa, gracz.zloto)
-			while True:
-				try:
-					wybor = int(raw_input('wybierz przedmiot[enter - wyjscie]:> '))
-					break
-				except ValueError:
-					return 0
-			if wybor in range(0, len(sprzedajacy.ekwipunek)):
-				if kupujacy.czy_stac(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny):
-					print ' gratulacje %s stal sie wlascicielem nowego slicznego %s' % (kupujacy.nazwa, sprzedajacy.ekwipunek[wybor].nazwa('dopelniacz'))
-					kontener.dodaj_przedmiot(kupujacy, sprzedajacy.ekwipunek[wybor])
-					kupujacy.wydatki(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny)
-					sprzedajacy.zarobki(sprzedajacy.ekwipunek[wybor].cena/modyfikator_ceny)
-					kontener.odejmij_przedmiot(sprzedajacy, sprzedajacy.ekwipunek[wybor])
-					
-
-					
-				else:
-					print 'nie stac cie na wybrany przedmiot'
-					break
-			else:
-				print 'wybierz przedmiot z listy'
 	
+	def poziom_trudnosci(self, ile):
+		poziom += ile
+		
 	def wybor_ekwipunku(self, zmieniajacy):
+		# do poprawy
 		kontener.prezentacja_przedmiotow(zmieniajacy, 3)
 		print zmieniajacy.opis()
 		while True:
@@ -614,30 +601,23 @@ class Silnik(object):
 		
 	def gra(self):
 		nr_lokacji = 0
-		
 		obecnalokacja = self.generator_lokacji.pobierz_lokacje(nr_lokacji)
 		while obecnalokacja != self.generator_lokacji.lokacje[-1]:
 			print obecnalokacja.opis_ogolny()
 			obecnalokacja.wejscie(gracz)
-			if obecnalokacja.nazwa('mianownik') == 'sklep':
-				generator_przedmiotow.losuj_przedmioty(self.
-			
 			while True:
-				self.generator_lokacji.prezentacja_lokacji(nr_lokacji)
-				wybor = int(raw_input('> '))
-				if wybor in self.generator_lokacji.przejscia[nr_lokacji]:
-					nr_lokacji = wybor
+				try:
+					print self.generator_lokacji.prezentacja_lokacji(nr_lokacji)
+					wybor = int(raw_input('> '))
+					nr_lokacji = self.generator_lokacji.przejscia[nr_lokacji][wybor]	
+					obecnalokacja = self.generator_lokacji.pobierz_lokacje(nr_lokacji)
 					break
-				else:
+				except (ValueError, IndexError):
 					print 'wybierz jedna z dostepnych opcji'
-			obecnalokacja = self.generator_lokacji.pobierz_lokacje(nr_lokacji)
-			
-			
 
-gra = Silnik(1)
+gra = Silnik()
 
-
-generator_przedmiotow.losuj_przedmioty(gracz,3,4)
+gra.gra()
 
 print kontener.prezentacja_przedmiotow(gracz, 4)
 gra.wybor_ekwipunku(gracz)
